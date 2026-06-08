@@ -1,0 +1,153 @@
+{
+  "$schema": "fincoach-blocks-catalog/1.0",
+  "version": "1.0.0",
+  "updated": "2026-06-05",
+  "personas": ["buerger", "entscheider", "fachperson", "betroffener", "schueler"],
+  "levels": ["einsteiger", "fortgeschritten", "experte"],
+  "zoomLevels": { "1": "TL;DR", "2": "Übersicht", "3": "Standard", "4": "Tiefe", "5": "Quellen" },
+  "blocks": [
+    {
+      "id": "hero", "title": "Hero / KPI-Kacheln", "category": "base",
+      "libs": [], "personas": ["buerger","entscheider","fachperson","betroffener","schueler"],
+      "levels": ["einsteiger","fortgeschritten","experte"], "defaultState": "expanded",
+      "minZoom": 1, "required": true, "lazy": false,
+      "dataContract": { "headline": "string", "lead": "string", "kpis": "array<{value,label}>", "dataStand": "ISO-date" },
+      "template": "blocks/hero.html", "init": "initHero"
+    },
+    {
+      "id": "background-3level", "title": "Hintergrund (3 Wissensniveaus)", "category": "base",
+      "libs": [], "personas": ["buerger","einsteiger","fachperson","schueler"],
+      "levels": ["einsteiger","fortgeschritten","experte"], "defaultState": "expanded",
+      "minZoom": 2, "required": false, "lazy": false,
+      "dataContract": { "einsteiger": "html", "fortgeschritten": "html", "experte": "html" },
+      "template": "blocks/background-3level.html", "init": "initLevelTabs"
+    },
+    {
+      "id": "interdisciplinary-map", "title": "Interdisziplinäre Landkarte (5 Rollen)", "category": "science",
+      "libs": [], "personas": ["fachperson"], "levels": ["fortgeschritten","experte"],
+      "defaultState": "collapsed", "minZoom": 3, "required": false, "lazy": false,
+      "dataContract": { "roles": "array<{role,focus,note}>" },
+      "template": "blocks/interdisciplinary-map.html", "init": "initRoleMap"
+    },
+    {
+      "id": "science-foundation", "title": "Wissenschaftlicher Unterbau (Formeln)", "category": "science",
+      "libs": ["katex"], "personas": ["fachperson"], "levels": ["experte"],
+      "defaultState": "collapsed", "minZoom": 3, "required": false, "lazy": true,
+      "dataContract": { "frameworks": "array<{title,text,formula}>" },
+      "template": "blocks/science-foundation.html", "init": "initKatex"
+    },
+    {
+      "id": "core-mechanics", "title": "Kern-Mechanik / Pro-Contra", "category": "base",
+      "libs": [], "personas": ["buerger","entscheider","fachperson"], "levels": ["einsteiger","fortgeschritten","experte"],
+      "defaultState": "expanded", "minZoom": 2, "required": false, "lazy": false,
+      "dataContract": { "rows": "array" }, "template": "blocks/core-mechanics.html", "init": null
+    },
+    {
+      "id": "lifecycle-cost", "title": "Lebenszyklus-Kosten (CAPEX/OPEX + Barwert)", "category": "finance",
+      "libs": ["echarts","katex"], "personas": ["entscheider","fachperson","einsteiger"],
+      "levels": ["einsteiger","fortgeschritten","experte"], "defaultState": "expanded",
+      "minZoom": 2, "required": false, "lazy": true, "since": "m310",
+      "dataContract": { "capex": "array<{name,value}>", "opexPerYear": "number", "years": "number", "rate": "number" },
+      "template": "blocks/lifecycle-cost.html", "init": "initLifecycleCost"
+    },
+    {
+      "id": "metric-vs-thresholds", "title": "Kennzahl vs. Grenzwert-Generationen", "category": "finance",
+      "libs": ["echarts"], "personas": ["fachperson","entscheider","betroffener"],
+      "levels": ["fortgeschritten","experte"], "defaultState": "expanded",
+      "minZoom": 2, "required": false, "lazy": true, "since": "m310",
+      "dataContract": { "metrics": "array", "thresholdSets": "array<{label,values}>" },
+      "template": "blocks/metric-vs-thresholds.html", "init": "initMetricThresholds"
+    },
+    {
+      "id": "emissions-dossier", "title": "Emissions-Dossier (Luft + CO₂)", "category": "finance",
+      "libs": ["echarts","katex"], "personas": ["buerger","fachperson","betroffener"],
+      "levels": ["fortgeschritten","experte"], "defaultState": "expanded",
+      "minZoom": 2, "required": false, "lazy": true, "since": "m310",
+      "dataContract": { "pollutants": "array", "co2Build": "number", "co2OpsYear": "number" },
+      "template": "blocks/emissions-dossier.html", "init": "initEmissions"
+    },
+    {
+      "id": "process-timeline", "title": "Interaktive Prozess-Timeline", "category": "base",
+      "libs": [], "personas": ["buerger","fachperson","schueler"], "levels": ["einsteiger","fortgeschritten","experte"],
+      "defaultState": "collapsed", "minZoom": 3, "required": false, "lazy": false,
+      "dataContract": { "day": "array", "week": "array", "month": "array" },
+      "template": "blocks/process-timeline.html", "init": "initTimeline"
+    },
+    {
+      "id": "impact-simulator", "title": "Live-Simulationstool (7 Achsen)", "category": "base",
+      "libs": ["chartjs"], "personas": ["fachperson","entscheider"], "levels": ["fortgeschritten","experte"],
+      "defaultState": "expanded", "minZoom": 3, "required": false, "lazy": true,
+      "dataContract": { "axes": "array", "lensWeights": "object" },
+      "template": "blocks/impact-simulator.html", "init": "initSimulator"
+    },
+    {
+      "id": "visual-gallery", "title": "Visual Exploration (Charts)", "category": "base",
+      "libs": ["echarts"], "personas": ["fachperson","entscheider"], "levels": ["fortgeschritten","experte"],
+      "defaultState": "collapsed", "minZoom": 3, "required": false, "lazy": true,
+      "dataContract": { "charts": "array" }, "template": "blocks/visual-gallery.html", "init": "initVizGallery"
+    },
+    {
+      "id": "media-gallery", "title": "Medien: Bildgalerie + Lightbox + Video + Hero-Roller", "category": "media",
+      "libs": [], "personas": ["buerger","betroffener","schueler","entscheider"], "levels": ["einsteiger","fortgeschritten","experte"],
+      "defaultState": "expanded", "minZoom": 2, "required": false, "lazy": false, "since": "m310",
+      "dataContract": { "images": "array<{src,cap}>", "youtube": "string|null", "osmEmbed": "bbox|null" },
+      "template": "blocks/media-gallery.html", "init": "initMediaGallery"
+    },
+    {
+      "id": "geo-impact-map", "title": "Geo-Wirkungskarte (Leaflet/OSM)", "category": "geo",
+      "libs": ["leaflet"], "personas": ["buerger","betroffener","fachperson"], "levels": ["einsteiger","fortgeschritten","experte"],
+      "defaultState": "expanded", "minZoom": 3, "required": false, "lazy": true, "since": "m310",
+      "features": ["choropleth", "distance-gradient", "address-geocoding", "drive-mode", "glow-route", "fullscreen"],
+      "dataContract": { "route": "array<latlng>", "areas": "array", "dimensions": "array" },
+      "template": "blocks/geo-impact-map.html", "init": "initGeo"
+    },
+    {
+      "id": "wikipedia-check", "title": "Wikipedia-in-the-Loop (Faktencheck 08W)", "category": "governance",
+      "libs": [], "personas": ["fachperson","experte"], "levels": ["experte"],
+      "defaultState": "collapsed", "minZoom": 5, "required": true, "lazy": false,
+      "note": "Pflicht für Tiefenmodule (Phase 3.7).",
+      "dataContract": { "scorecard": "object", "rows": "array", "oldids": "array" },
+      "template": "blocks/wikipedia-check.html", "init": null
+    },
+    {
+      "id": "decision-matrix", "title": "Decision-Sampling-Matrix (E/E/W)", "category": "decision",
+      "libs": [], "personas": ["fachperson","entscheider"], "levels": ["experte"],
+      "defaultState": "collapsed", "minZoom": 4, "required": false, "lazy": false,
+      "dataContract": { "stakeholders": "array" }, "template": "blocks/decision-matrix.html", "init": null
+    },
+    {
+      "id": "impact-dossier", "title": "Impact-Dossier (7 Wirkungsachsen)", "category": "base",
+      "libs": [], "personas": ["buerger","fachperson","entscheider"], "levels": ["fortgeschritten","experte"],
+      "defaultState": "expanded", "minZoom": 3, "required": false, "lazy": false,
+      "dataContract": { "axes": "array" }, "template": "blocks/impact-dossier.html", "init": "initImpactCards"
+    },
+    {
+      "id": "swot", "title": "SWOT (ausgewogen)", "category": "decision",
+      "libs": [], "personas": ["entscheider","buerger","fachperson"], "levels": ["einsteiger","fortgeschritten","experte"],
+      "defaultState": "expanded", "minZoom": 2, "required": false, "lazy": false, "since": "m310",
+      "dataContract": { "strengths": "array", "weaknesses": "array", "opportunities": "array", "risks": "array" },
+      "template": "blocks/swot.html", "init": null
+    },
+    {
+      "id": "stakeholder-compass", "title": "Stakeholder-Entscheidungskompass (gewichtet)", "category": "decision",
+      "libs": [], "personas": ["entscheider","buerger","betroffener"], "levels": ["einsteiger","fortgeschritten","experte"],
+      "defaultState": "expanded", "minZoom": 2, "required": false, "lazy": false, "since": "m310",
+      "dataContract": { "criteria": "array", "groups": "array<{id,name,a,s,pro,con}>" },
+      "template": "blocks/stakeholder-compass.html", "init": "initBK"
+    },
+    {
+      "id": "implementation-roadmap", "title": "Fahrplan / Umsetzung", "category": "base",
+      "libs": [], "personas": ["entscheider","fachperson"], "levels": ["fortgeschritten","experte"],
+      "defaultState": "collapsed", "minZoom": 3, "required": false, "lazy": false,
+      "dataContract": { "phases": "array" }, "template": "blocks/implementation-roadmap.html", "init": null
+    },
+    {
+      "id": "sources-glossary", "title": "Quellen, Glossar, Brand-Footer", "category": "governance",
+      "libs": [], "personas": ["buerger","entscheider","fachperson","betroffener","schueler"], "levels": ["einsteiger","fortgeschritten","experte"],
+      "defaultState": "expanded", "minZoom": 5, "required": true, "lazy": false,
+      "note": "Pflicht: Quellen + Datenstand + Brand/Copyright (Datum-/Brand-Pflicht).",
+      "dataContract": { "sources": "array", "glossary": "array" },
+      "template": "blocks/sources-glossary.html", "init": null
+    }
+  ]
+}

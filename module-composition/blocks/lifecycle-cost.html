@@ -1,0 +1,15 @@
+<p class="text-xs text-slate-400 my-3" id="lc-note">CAPEX-Bestandteile (Mio €) — Chart lädt beim Aufklappen…</p>
+<div id="lc-chart" style="height:280px"></div>
+<p class="text-xs text-slate-400 mt-3">Barwert der Betriebskosten (1,5 Mio €/J, 50 J, 3 %) ≈ <strong class="text-white">38,6 Mio €</strong> — ohne Generalinstandsetzung. Kritisch: nicht-förderfähige Sparten-/Bahnposten treffen Stadt &amp; Gebührenzahler.</p>
+<script>
+window.FCB_INIT['lifecycle-cost']=async function(el){
+  await FCB.loadLib('echarts');
+  var c=echarts.init(el.querySelector('#lc-chart'));
+  c.setOption({backgroundColor:'transparent',grid:{left:'2%',right:'10%',top:'6%',bottom:'4%',containLabel:true},
+    tooltip:{trigger:'axis',backgroundColor:'#121A2E',borderColor:'#1E293B',textStyle:{color:'#E2E8F0'}},
+    xAxis:{type:'value',axisLabel:{color:'#94A3B8',fontFamily:'JetBrains Mono'},splitLine:{lineStyle:{color:'#1E293B'}}},
+    yAxis:{type:'category',data:['Bauwerk','N-Ergie','Abwasser','DB (2015)','Grüner Deckel'],axisLabel:{color:'#94A3B8',fontFamily:'JetBrains Mono'}},
+    series:[{type:'bar',data:[{value:1050,itemStyle:{color:'#00CFFF'}},{value:62.4,itemStyle:{color:'#E6399A'}},{value:18.4,itemStyle:{color:'#E6399A'}},{value:11.05,itemStyle:{color:'#FF6B00'}},{value:120,itemStyle:{color:'#DFAF0F'}}],label:{show:true,position:'right',color:'#E2E8F0',fontFamily:'JetBrains Mono',fontSize:9,formatter:'{c}'}}]});
+  el.querySelector('#lc-note').textContent='CAPEX-Bestandteile (Mio €). Gefördertes Bauwerk dominiert; Nebenposten kommen obendrauf.';
+};
+</script>

@@ -1,0 +1,15 @@
+<p class="text-xs text-slate-400 my-3" id="em-note">Prognose 2030 vs. Grenzwerte (µg/m³) — Chart lädt beim Aufklappen…</p>
+<div id="em-chart" style="height:300px"></div>
+<p class="text-xs text-slate-400 mt-3">ACCON-Prognose 2030 unter dem alten 40-µg/m³-Limit, aber über den ab 2030 geltenden EU-Werten (Richtlinie (EU) 2024/2881) und den WHO-Leitwerten. CO₂: 78.759 t Bau + 237 t/Jahr Tunnelbetrieb (ohne Fahrzeug-Verkehr).</p>
+<script>
+window.FCB_INIT['emissions-dossier']=async function(el){
+  await FCB.loadLib('echarts');
+  var c=echarts.init(el.querySelector('#em-chart'));
+  var AX={color:'#94A3B8',fontFamily:'JetBrains Mono'};
+  c.setOption({backgroundColor:'transparent',legend:{top:0,textStyle:{color:'#94A3B8',fontSize:10}},grid:{left:'2%',right:'3%',top:'16%',bottom:'4%',containLabel:true},
+    tooltip:{trigger:'axis',backgroundColor:'#121A2E',borderColor:'#1E293B',textStyle:{color:'#E2E8F0'}},
+    xAxis:{type:'category',data:['NO₂','PM₁₀','PM₂,₅'],axisLabel:AX},yAxis:{type:'value',name:'µg/m³',nameTextStyle:{color:'#64748B'},axisLabel:AX,splitLine:{lineStyle:{color:'#1E293B'}}},
+    series:[{name:'Prognose 2030',type:'bar',data:[30,23,14],itemStyle:{color:'#00CFFF'}},{name:'EU bis 2029',type:'bar',data:[40,40,25],itemStyle:{color:'#DFAF0F'}},{name:'EU ab 2030',type:'bar',data:[20,20,10],itemStyle:{color:'#FF6B00'}},{name:'WHO',type:'bar',data:[10,15,5],itemStyle:{color:'#00CC7A'}}]});
+  el.querySelector('#em-note').textContent='Prognose 2030 (cyan) vs. drei Grenzwert-Generationen.';
+};
+</script>

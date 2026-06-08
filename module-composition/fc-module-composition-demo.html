@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<!--
+  FinCoach Module Composition Framework · Referenz-Prototyp
+  Lädt blocks-catalog.json + modul-m310.manifest.json und rendert ein Modul aus Blöcken:
+  Collapsible-Shell · Lazy-Init (ECharts wird erst beim Öffnen nachgeladen) · Persona × θ · Persistenz.
+  Lässt das produktive Modul (modul-m310-*.html) unangetastet.
+-->
+<html lang="de" class="dark">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCF · Referenz-Prototyp · FinCoach AI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif'],display:['Space Grotesk','sans-serif'],mono:['JetBrains Mono','monospace']},colors:{tngb:{bg:'#0A0F1A',card:'#121A2E',cyan:'#00CFFF',emerald:'#00CC7A',magenta:'#E6399A',orange:'#FF6B00',lavender:'#9933FF',gold:'#DFAF0F',indigo:'#4472C4',coral:'#E040A0',muted:'#64748B',border:'#1E293B'}}}}};</script>
+<style>
+body{background:#0A0F1A;color:#E2E8F0;font-family:'Inter',sans-serif}
+.glass-nav{background:rgba(10,15,26,.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,207,255,.15)}
+.fc-block{border:1px solid #1E293B;border-radius:14px;background:#121A2E;margin-bottom:14px;overflow:hidden;transition:border-color .2s}
+.fc-block:hover{border-color:rgba(0,207,255,.3)}
+.fc-block-head{width:100%;display:flex;align-items:center;gap:12px;padding:14px 18px;background:transparent;border:none;cursor:pointer;text-align:left;color:#E2E8F0}
+.fc-block-head:hover{background:rgba(0,207,255,.04)}
+.fc-block-title{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:15px;flex:1}
+.fc-chevron{transition:transform .25s;color:#64748B;font-size:14px}
+.fc-block[data-state="collapsed"] .fc-chevron{transform:rotate(-90deg)}
+.fc-block[data-state="collapsed"] .fc-block-body{display:none}
+.fc-block-body{padding:0 18px 18px 18px;border-top:1px solid #1E293B}
+.fc-badge{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 7px;border-radius:9999px;white-space:nowrap}
+.b-req{background:rgba(230,57,154,.15);color:#E6399A;border:1px solid rgba(230,57,154,.4)}
+.b-lib{background:rgba(153,51,255,.13);color:#9933FF;border:1px solid rgba(153,51,255,.35)}
+.b-lazy{background:rgba(223,175,15,.13);color:#DFAF0F;border:1px solid rgba(223,175,15,.35)}
+.b-cat{background:rgba(0,207,255,.10);color:#00CFFF;border:1px solid rgba(0,207,255,.3)}
+.ctl{background:#0A0F1A;border:1px solid #1E293B;color:#fff;border-radius:8px;padding:7px 10px;font-size:13px}
+.btn{background:rgba(0,207,255,.10);border:1px solid rgba(0,207,255,.4);color:#00CFFF;border-radius:8px;padding:7px 12px;font-size:12px;font-family:'JetBrains Mono',monospace;cursor:pointer}
+.btn:hover{background:rgba(0,207,255,.2)}
+.slider{-webkit-appearance:none;width:100%;height:4px;background:#1E293B;border-radius:2px}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:#00CFFF;border-radius:50%;cursor:pointer}
+</style>
+</head>
+<body>
+<nav class="glass-nav fixed top-0 left-0 right-0 z-50"><div class="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<svg viewBox="0 0 100 100" class="w-8 h-8"><path d="M 6,95 L 6,53 A 8,8 0 0 1 22,53 L 22,95 Z" fill="#E6399A" fill-opacity=".25" stroke="#E6399A" stroke-width="2"/><path d="M 26,95 L 26,35 A 8,8 0 0 1 42,35 L 42,95 Z" fill="#00CFFF" fill-opacity=".25" stroke="#00CFFF" stroke-width="2"/><path d="M 46,95 L 46,21 A 8,8 0 0 1 62,21 L 62,95 Z" fill="#00CC7A" fill-opacity=".25" stroke="#00CC7A" stroke-width="2"/><path d="M 66,95 L 66,10 A 8,8 0 0 1 82,10 L 82,95 Z" fill="#FF6B00" fill-opacity=".25" stroke="#FF6B00" stroke-width="2"/></svg>
+<div><div class="font-display font-bold text-white leading-tight">FinCoach AI</div><div class="text-[10px] text-tngb-cyan font-mono">Module Composition Framework · Prototyp</div></div>
+</div>
+<a href="../modul-m310-frankenschnellweg-buergerentscheid.html" class="text-slate-300 hover:text-tngb-cyan text-sm">M310 (Vollmodul) →</a>
+</div></nav>
+
+<section class="pt-28 pb-8 px-6"><div class="max-w-5xl mx-auto">
+<h1 class="font-display font-black text-3xl md:text-4xl text-white mb-2">Modul aus Blöcken zusammensetzen</h1>
+<p class="text-slate-400 mb-6 max-w-3xl text-sm">Dieselbe Manifest-Quelle, verschiedene Sichten. Wähle <strong class="text-white">Persona</strong> und <strong class="text-white">Wissensniveau</strong> — Blöcke werden umsortiert, ein-/ausgeklappt oder ausgeblendet. Schwere Blöcke (Charts) laden ihre Bibliothek <strong class="text-white">erst beim Aufklappen</strong> (Lazy-Init). Zustand wird gespeichert.</p>
+<div class="bg-tngb-card border border-tngb-border rounded-xl p-4 flex flex-wrap items-end gap-4">
+<div><label class="block text-[10px] font-mono text-slate-500 uppercase mb-1">Persona</label><select id="sel-persona" class="ctl"></select></div>
+<div><label class="block text-[10px] font-mono text-slate-500 uppercase mb-1">Wissensniveau (θ)</label><select id="sel-level" class="ctl"><option value="einsteiger">Einsteiger</option><option value="fortgeschritten" selected>Fortgeschritten</option><option value="experte">Experte</option></select></div>
+<button id="btn-expand" class="btn">▾ Alle aufklappen</button>
+<button id="btn-collapse" class="btn">▸ Alle einklappen</button>
+<button id="btn-reset" class="btn">↺ Reset</button>
+<div class="text-[11px] font-mono text-slate-500 ml-auto" id="stat"></div>
+</div>
+</div></section>
+
+<main id="fc-module" class="max-w-5xl mx-auto px-6 pb-20"></main>
+
+<footer class="max-w-5xl mx-auto px-6 py-8 border-t border-tngb-border text-xs text-slate-500">
+© 2026 <a href="https://www.TheNextGenerationBanking.com" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline font-mono">TheNextGenerationBanking.com</a> · FinCoach AI · MCF-Prototyp · Katalog/Manifest werden zur Laufzeit geladen.
+</footer>
+
+<script>
+// ---------- Lib-Loader (lädt nur was gebraucht wird) ----------
+const _libs={};
+function loadLib(name){
+  if(_libs[name])return _libs[name];
+  const url={echarts:'https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js'}[name];
+  if(!url){_libs[name]=Promise.resolve();return _libs[name];}
+  _libs[name]=new Promise((res,rej)=>{const s=document.createElement('script');s.src=url;s.onload=res;s.onerror=rej;document.head.appendChild(s);});
+  return _libs[name];
+}
+const TT={backgroundColor:'#121A2E',borderColor:'#1E293B',textStyle:{color:'#E2E8F0'}};
+const AX={color:'#94A3B8',fontFamily:'JetBrains Mono'};
+
+// ---------- Demo-Inhalte je Block (im echten Generator: blocks/<id>.html) ----------
+const RENDER={
+  hero(b,el){el.innerHTML=`<p class="text-slate-300 mb-4 mt-3">Eine Milliarde, ein Tunnel, eine Stimme pro Bürger — Bürgerentscheid 28.06.2026.</p>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    ${[['~1,1 Mrd €','Gesamtkosten'],['~80 %','Förderung'],['1,8 km','Tunnel'],['12–15 J','Bauzeit']].map(k=>`<div class="bg-tngb-bg border border-tngb-cyan/30 rounded-lg p-3"><div class="text-tngb-cyan font-display font-bold text-xl">${k[0]}</div><div class="text-[11px] text-slate-400">${k[1]}</div></div>`).join('')}</div>`;},
+  swot(b,el){const q=[['Stärken','emerald','Lärmschutz 14.000 Anwohner · 10 Min/Tag · 22.000 m² Park'],['Schwächen','magenta','~300 Mio Stadt-Anteil · 10+3 J Bau · 78.759 t Bau-CO₂'],['Chancen','cyan','Hitzeinsel mildern · Stadtteile vernetzen · Verkehrswende'],['Risiken','orange','Kostensteigerung · induzierter Verkehr · EU-2030-Grenzwerte']];
+    el.innerHTML=`<div class="grid md:grid-cols-2 gap-3 mt-3">${q.map(x=>`<div class="bg-tngb-bg border border-tngb-${x[1]}/40 rounded-lg p-3"><div class="text-xs font-mono text-tngb-${x[1]} uppercase mb-1">${x[0]}</div><p class="text-xs text-slate-300">${x[2]}</p></div>`).join('')}</div>`;},
+  async 'lifecycle-cost'(b,el){el.innerHTML=`<p class="text-xs text-slate-400 my-3">CAPEX-Bestandteile (Mio €) — ECharts wird gerade nachgeladen…</p><div id="lc-${b.id}" style="height:260px"></div>`;await loadLib('echarts');const c=echarts.init(document.getElementById('lc-'+b.id));c.setOption({backgroundColor:'transparent',grid:{left:'2%',right:'8%',top:'6%',bottom:'4%',containLabel:true},tooltip:{trigger:'axis',...TT},xAxis:{type:'value',axisLabel:AX,splitLine:{lineStyle:{color:'#1E293B'}}},yAxis:{type:'category',data:['Bauwerk','N-Ergie','Abwasser','DB','Grüner Deckel'],axisLabel:AX},series:[{type:'bar',data:[1050,62.4,18.4,11.05,120],itemStyle:{color:'#00CFFF'},label:{show:true,position:'right',color:'#E2E8F0',fontSize:9}}]});el.querySelector('p').textContent='CAPEX-Bestandteile (Mio €). Barwert OPEX (1,5 Mio/J, 50 J, 3 %) ≈ 38,6 Mio €.';},
+  async 'emissions-dossier'(b,el){el.innerHTML=`<p class="text-xs text-slate-400 my-3">Prognose 2030 vs. Grenzwerte (µg/m³) — Lazy-Load…</p><div id="em-${b.id}" style="height:280px"></div>`;await loadLib('echarts');const c=echarts.init(document.getElementById('em-'+b.id));c.setOption({backgroundColor:'transparent',legend:{top:0,textStyle:{color:'#94A3B8',fontSize:10}},grid:{left:'2%',right:'3%',top:'16%',bottom:'4%',containLabel:true},tooltip:{trigger:'axis',...TT},xAxis:{type:'category',data:['NO₂','PM₁₀','PM₂,₅'],axisLabel:AX},yAxis:{type:'value',axisLabel:AX,splitLine:{lineStyle:{color:'#1E293B'}}},series:[{name:'Prognose 2030',type:'bar',data:[30,23,14],itemStyle:{color:'#00CFFF'}},{name:'EU bis 2029',type:'bar',data:[40,40,25],itemStyle:{color:'#DFAF0F'}},{name:'EU ab 2030',type:'bar',data:[20,20,10],itemStyle:{color:'#FF6B00'}},{name:'WHO',type:'bar',data:[10,15,5],itemStyle:{color:'#00CC7A'}}]});el.querySelector('p').textContent='Prognose 2030 unter altem Limit (40), aber über EU-2030 & WHO.';},
+  'stakeholder-compass'(b,el){const groups=[['🚗 Pendler',+2,0],['🏠 Anwohner Trasse',+1.5,-0.3],['💶 Steuerzahler',-0.8,-0.3]];
+    el.innerHTML=`<p class="text-xs text-slate-400 my-3">Mini-Demo: Gewichtung Kosten ↔ Nutzen verschieben.</p><input id="sc-${b.id}" type="range" min="0" max="100" value="50" class="slider mb-3"><div id="scr-${b.id}" class="space-y-2"></div>`;
+    const draw=(w)=>{const f=w/100;document.getElementById('scr-'+b.id).innerHTML=groups.map(g=>{const v=g[1]*(1-f)+g[2]*f*2; /* w hoch = Kosten wichtig -> Richtung Sanierung */const val=Math.round((g[1]*(1-f)+g[2]*f)*50);const col=val>=0?'#00CFFF':'#DFAF0F';return `<div class="flex items-center gap-2 text-xs"><span class="w-40 text-slate-300">${g[0]}</span><span class="font-mono" style="color:${col}">${val>0?'+':''}${val} → ${val>=0?'Ausbau':'Sanierung'}</span></div>`;}).join('');};
+    draw(50);document.getElementById('sc-'+b.id).addEventListener('input',e=>draw(+e.target.value));},
+  'sources-glossary'(b,el){el.innerHTML=`<ol class="text-xs text-slate-400 list-decimal list-inside space-y-1 mt-3"><li>Stadt Nürnberg/SÖR Flyer (Stand 2026-05)</li><li>Ergänzende Planfeststellung 2020 · Gutachten</li><li>BauLust e.V. · „Zurück auf Los" · BUND</li><li>ACCON Luftschadstoffprognose 2030 · LfU Bayern</li></ol><div class="text-[10px] text-slate-600 mt-3 font-mono">Datenstand 2026-06-04 · Pflichtblock (required)</div>`;}
+};
+function renderDefault(b,el){el.innerHTML=`<p class="text-xs text-slate-400 mt-3">Block-Inhalt <span class="font-mono text-tngb-cyan">${b.template}</span> (im Generator inline eingefügt). Kategorie: ${b.category}.</p>`;}
+
+// ---------- Runtime ----------
+let CATALOG,MANIFEST,catById={},STORE_KEY;
+async function loadJSON(p){const r=await fetch(p);return r.json();}
+function persistGet(){try{return JSON.parse(localStorage.getItem(STORE_KEY)||'{}');}catch(e){return {};}}
+function persistSet(o){localStorage.setItem(STORE_KEY,JSON.stringify(o));}
+
+function effectiveBlocks(persona,level){
+  let list=MANIFEST.blocks.filter(x=>x.enabled!==false).map(x=>{
+    const cat=catById[x.use]||{id:x.use,title:x.use,category:'?',libs:[],template:'blocks/'+x.use+'.html'};
+    let state=x.collapsed===true?'collapsed':(x.collapsed===false?'expanded':(cat.defaultState||'expanded'));
+    return {...cat, _state:state, _hidden:false};
+  });
+  // θ-Heuristik: Einsteiger klappt Theorie/Quellen ein; Experte klappt Wissenschaft auf
+  list.forEach(b=>{
+    if(level==='einsteiger'&&['science-foundation','wikipedia-check','decision-matrix','interdisciplinary-map'].includes(b.id))b._state='collapsed';
+    if(level==='experte'&&['science-foundation','wikipedia-check'].includes(b.id))b._state='expanded';
+  });
+  // Persona-Preset
+  const p=(MANIFEST.personaPresets||{})[persona]||{};
+  if(p.hide)list.forEach(b=>{if(p.hide.includes(b.id)&&!b.required)b._hidden=true;});
+  if(p.collapse)list.forEach(b=>{if(p.collapse.includes(b.id))b._state='collapsed';});
+  if(p.expand)list.forEach(b=>{if(p.expand.includes(b.id))b._state='expanded';});
+  list=list.filter(b=>!b._hidden);
+  if(p.orderFirst){const fr=[];p.orderFirst.forEach(id=>{const i=list.findIndex(b=>b.id===id);if(i>=0)fr.push(list.splice(i,1)[0]);});list=fr.concat(list);}
+  return list;
+}
+
+function makeBlock(b){
+  const sec=document.createElement('section');sec.className='fc-block';sec.dataset.block=b.id;sec.dataset.state=b._state;sec.id='blk-'+b.id;
+  const badges=[`<span class="fc-badge b-cat">${b.category}</span>`];
+  if(b.required)badges.push('<span class="fc-badge b-req">Pflicht</span>');
+  (b.libs||[]).forEach(l=>badges.push(`<span class="fc-badge b-lib">${l}</span>`));
+  if(b.lazy)badges.push('<span class="fc-badge b-lazy">lazy</span>');
+  sec.innerHTML=`<button class="fc-block-head" aria-expanded="${b._state==='expanded'}"><span class="fc-block-title">${b.title}</span>${badges.join(' ')}<span class="fc-chevron">▾</span></button><div class="fc-block-body"></div>`;
+  const body=sec.querySelector('.fc-block-body');const head=sec.querySelector('.fc-block-head');
+  let inited=false;
+  const ensure=async()=>{if(inited)return;inited=true;const fn=RENDER[b.id];if(fn)await fn(b,body);else renderDefault(b,body);};
+  const setState=(st,save=true)=>{sec.dataset.state=st;head.setAttribute('aria-expanded',st==='expanded');if(st==='expanded')ensure();if(save){const s=persistGet();s[b.id]=st;persistSet(s);}updateStat();};
+  head.addEventListener('click',()=>setState(sec.dataset.state==='expanded'?'collapsed':'expanded'));
+  sec._setState=setState;sec._block=b;
+  if(b._state==='expanded')ensure();
+  return sec;
+}
+
+function render(){
+  const persona=document.getElementById('sel-persona').value;
+  const level=document.getElementById('sel-level').value;
+  const list=effectiveBlocks(persona,level);
+  const saved=persistGet();
+  list.forEach(b=>{if(saved[b.id])b._state=saved[b.id];});
+  const root=document.getElementById('fc-module');root.innerHTML='';
+  list.forEach(b=>root.appendChild(makeBlock(b)));
+  updateStat();
+}
+function updateStat(){const all=[...document.querySelectorAll('.fc-block')];const open=all.filter(s=>s.dataset.state==='expanded').length;const total=MANIFEST.blocks.length;const off=MANIFEST.blocks.filter(b=>b.enabled===false).length;document.getElementById('stat').textContent=`${all.length} sichtbar · ${open} offen · ${off} weggelassen · ${total} im Manifest`;}
+
+(async function(){
+  CATALOG=await loadJSON('blocks-catalog.json');
+  MANIFEST=await loadJSON('modul-m310.manifest.json');
+  CATALOG.blocks.forEach(b=>catById[b.id]=b);
+  STORE_KEY='fc_'+MANIFEST.module+'_blocks';
+  const sp=document.getElementById('sel-persona');
+  (CATALOG.personas||['buerger']).forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p.charAt(0).toUpperCase()+p.slice(1);sp.appendChild(o);});
+  sp.value=MANIFEST.personaDefault||'buerger';
+  const t=parseFloat(localStorage.getItem('cat_theta'));if(!isNaN(t))document.getElementById('sel-level').value=t<-1?'einsteiger':(t>1?'experte':'fortgeschritten');
+  sp.addEventListener('change',()=>{persistSet({});render();});
+  document.getElementById('sel-level').addEventListener('change',()=>{persistSet({});render();});
+  document.getElementById('btn-expand').addEventListener('click',()=>document.querySelectorAll('.fc-block').forEach(s=>s._setState('expanded')));
+  document.getElementById('btn-collapse').addEventListener('click',()=>document.querySelectorAll('.fc-block').forEach(s=>s._setState('collapsed')));
+  document.getElementById('btn-reset').addEventListener('click',()=>{persistSet({});render();});
+  render();
+})();
+</script>
+</body></html>

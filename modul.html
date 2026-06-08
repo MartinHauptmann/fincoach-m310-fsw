@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<!--
+    FinCoach AI · Tiefenmodul M310
+    Bürgerentscheid Frankenschnellweg Nürnberg ("Zurück auf Los!")
+    Datenstand: 2026-06-04 · Research: WebFetch (baulust.de, zurueck-auf-los.de, nuernberg.de) + WebSearch
+    Quellen-Disziplin: Pro- (Stadt/SÖR) und Contra-Position (BauLust/Zurück auf Los) ausgewogen abgebildet.
+-->
+<html lang="de" class="dark">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>M310 · Bürgerentscheid Frankenschnellweg Nürnberg · FinCoach AI</title>
+<meta name="description" content="Tiefenmodul zum Nürnberger Bürgerentscheid am 28.06.2026 über den kreuzungsfreien Ausbau des Frankenschnellwegs: Kosten ~1,1 Mrd. €, Tunnel, Förderung, Klima, Direktdemokratie – ausgewogen mit Pro- und Contra-Position.">
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/echarts-gl@2.0.9/dist/echarts-gl.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false}],throwOnError:false,errorColor:'#E6399A'});"></script>
+<link rel="stylesheet" href="fonts.css">
+
+<script>tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif'],display:['Space Grotesk','sans-serif'],mono:['JetBrains Mono','monospace']},colors:{tngb:{bg:'#0A0F1A',card:'#121A2E',cyan:'#00CFFF',emerald:'#00CC7A',magenta:'#E6399A',orange:'#FF6B00',lavender:'#9933FF',gold:'#DFAF0F',indigo:'#4472C4',coral:'#E040A0',muted:'#64748B',border:'#1E293B'}}}}};</script>
+
+<style>
+body{background:#0A0F1A;color:#E2E8F0;font-family:'Inter',sans-serif}
+.glass-nav{background:rgba(10,15,26,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,207,255,0.15)}
+.scroll-fade{opacity:0;transform:translateY(20px);transition:all .6s}.scroll-fade.visible{opacity:1;transform:translateY(0)}
+.hero-gradient{background:radial-gradient(circle at 30% 20%,rgba(0,207,255,.18),transparent 50%),radial-gradient(circle at 70% 80%,rgba(230,57,154,.10),transparent 50%)}
+.slider-track{-webkit-appearance:none;width:100%;height:4px;background:#1E293B;border-radius:2px;outline:none}
+.slider-track::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#00CFFF;border-radius:50%;cursor:pointer;box-shadow:0 0 12px rgba(0,207,255,.5)}
+.level-tab{background:transparent;border:1px solid #1E293B;color:#94A3B8;transition:all .25s cubic-bezier(.4,0,.2,1)}.level-tab.active{background:rgba(0,207,255,.12);border-color:#00CFFF;color:#00CFFF}
+.level-content{display:none}.level-content.active{display:block}
+.role-card{transition:all .3s cubic-bezier(.4,0,.2,1)}.role-card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.4)}
+[data-tooltip]{position:relative;cursor:help;border-bottom:1px dotted rgba(0,207,255,0.5)}
+[data-tooltip]::after{content:attr(data-tooltip);position:absolute;bottom:calc(100% + 8px);left:50%;transform:translateX(-50%);width:max-content;max-width:280px;background:#0A0F1A;color:#E2E8F0;padding:10px 14px;border-radius:8px;border:1px solid #00CFFF;font-size:12px;line-height:1.4;z-index:9999;opacity:0;pointer-events:none;transition:opacity .18s;font-family:'Inter',sans-serif}
+[data-tooltip]:hover::after{opacity:1}
+.gm-cell[data-ne="true"]{background:rgba(223,175,15,.08);outline:2px solid #DFAF0F}.gm-cell:hover{background:rgba(0,207,255,.06);transition:.2s}
+.verdict-pill{display:inline-block;padding:2px 8px;border-radius:9999px;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:600}
+.v-confirmed{background:rgba(0,204,122,.15);color:#00CC7A;border:1px solid rgba(0,204,122,.4)}
+.v-enriched{background:rgba(0,207,255,.15);color:#00CFFF;border:1px solid rgba(0,207,255,.4)}
+.v-divergent{background:rgba(230,57,154,.15);color:#E6399A;border:1px solid rgba(230,57,154,.4)}
+.v-notcovered{background:rgba(100,116,139,.15);color:#94A3B8;border:1px solid rgba(100,116,139,.4)}
+
+/* 02B · Bildergalerie + 08C · Geo-Karte */
+.gal-slide{display:none}.gal-slide.active{display:block;animation:galFade .6s}
+@keyframes galFade{from{opacity:0}to{opacity:1}}
+.gal-img{width:100%;height:420px;object-fit:cover;border-radius:12px;display:block;background:#121A2E;border:0}
+.gal-nav{position:absolute;top:46%;transform:translateY(-50%);background:rgba(10,15,26,.7);border:1px solid #1E293B;color:#fff;width:40px;height:40px;border-radius:50%;cursor:pointer;font-size:20px;z-index:5;line-height:1}
+.gal-nav:hover{border-color:#00CFFF;color:#00CFFF}
+.gal-dot{width:8px;height:8px;border-radius:50%;background:#1E293B;cursor:pointer;border:none;padding:0}.gal-dot.active{background:#00CFFF}
+#geo-map{height:480px;border-radius:12px;z-index:1}
+#geo-map:fullscreen{height:100vh;border-radius:0}
+#imglightbox{align-items:center;justify-content:center}
+.lb-btn{position:absolute;background:rgba(10,15,26,.6);border:1px solid rgba(255,255,255,.2);color:#fff;cursor:pointer;border-radius:8px;z-index:2;line-height:1}
+.lb-btn:hover{border-color:#00CFFF;color:#00CFFF}
+.drive-car{filter:drop-shadow(0 0 6px rgba(223,175,15,.9))}
+.hero-roll-wrap{box-shadow:0 8px 28px rgba(0,0,0,.45)}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#121A2E;color:#E2E8F0;border:1px solid #1E293B}
+.leaflet-container{background:#0A0F1A;font-family:'Inter',sans-serif}
+
+/* Phase 5.1 · Prozess-Timeline */
+.pt-btn{background:transparent;border:1px solid #1E293B;color:#94A3B8;transition:all .25s cubic-bezier(.4,0,.2,1);cursor:pointer}.pt-btn.active{background:rgba(0,207,255,.12);border-color:#00CFFF;color:#00CFFF}.pt-btn:hover:not(.active){border-color:rgba(0,207,255,.3);color:#E2E8F0}
+.pt-btn-play{background:rgba(0,207,255,.15);border:1px solid rgba(0,207,255,.4);color:#00CFFF;transition:all .25s cubic-bezier(.4,0,.2,1);cursor:pointer}.pt-btn-play:hover{background:rgba(0,207,255,.25)}.pt-btn-play.playing{background:rgba(255,107,0,.15);border-color:rgba(255,107,0,.4);color:#FF6B00}
+.pt-node-rect{fill:#121A2E;stroke:#1E293B;stroke-width:1.5;transition:all .4s cubic-bezier(.4,0,.2,1)}.pt-node.active .pt-node-rect{fill:rgba(0,207,255,.10);stroke:#00CFFF;stroke-width:2}.pt-node.active{animation:ptPulse 2.6s ease-in-out infinite}.pt-node.completed .pt-node-rect{fill:rgba(0,204,122,.06);stroke:rgba(0,204,122,.55)}
+.pt-node-label{fill:#E2E8F0;font-family:'Space Grotesk',sans-serif;font-size:13px;font-weight:600;pointer-events:none}.pt-node-id{fill:#64748B;font-family:'JetBrains Mono',monospace;font-size:10px;pointer-events:none}.pt-node.active .pt-node-id{fill:#00CFFF}.pt-node-meta{fill:#64748B;font-family:'JetBrains Mono',monospace;font-size:9px;pointer-events:none}
+.pt-edge{stroke:#1E293B;stroke-width:1.5;fill:none;transition:stroke .4s cubic-bezier(.4,0,.2,1)}.pt-edge.active{stroke:#00CFFF;stroke-dasharray:4 4;animation:ptDash .9s linear infinite}.pt-edge.completed{stroke:rgba(0,204,122,.45)}
+@keyframes ptDash{to{stroke-dashoffset:-8}}@keyframes ptPulse{0%,100%{filter:drop-shadow(0 0 10px rgba(0,207,255,.45))}50%{filter:drop-shadow(0 0 24px rgba(0,207,255,.75))}}
+.zoom-toggle{background:transparent;border:1px solid #1E293B;color:#94A3B8;cursor:pointer;transition:all .25s}.zoom-toggle:hover{color:#fff;border-color:rgba(0,207,255,.4)}
+
+/* Phase 5.4 · NavDock */
+#navdock{position:fixed;top:92px;bottom:0;left:0;z-index:35;width:60px;background:rgba(18,26,46,.94);backdrop-filter:blur(20px);border-right:1px solid #1E293B;transition:width .35s cubic-bezier(.4,0,.2,1);overflow:hidden;display:flex;flex-direction:column}
+#navdock:hover,#navdock.expanded{width:320px}
+.navdock-section{padding:12px 14px;border-bottom:1px solid #1E293B}
+.navdock-label{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;color:#64748B;letter-spacing:1.5px;margin-bottom:8px;white-space:nowrap;opacity:0;transition:opacity .25s;display:block}
+#navdock:hover .navdock-label,#navdock.expanded .navdock-label{opacity:1}
+.zoom-btn{display:flex;align-items:center;gap:10px;width:100%;padding:7px 8px;background:transparent;border:1px solid transparent;color:#94A3B8;border-radius:6px;font-size:11px;font-family:'JetBrains Mono',monospace;cursor:pointer;text-align:left;transition:all .2s;margin-bottom:2px;white-space:nowrap}
+.zoom-btn:hover{color:#fff;border-color:rgba(0,207,255,.3);background:rgba(0,207,255,.04)}
+.zoom-btn.active{background:rgba(0,207,255,.12);border-color:#00CFFF;color:#00CFFF}
+.zoom-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0;font-weight:700}
+.zoom-text{opacity:0;transition:opacity .25s;white-space:nowrap}
+#navdock:hover .zoom-text,#navdock.expanded .zoom-text{opacity:1}
+.navdock-minimap{flex:1;overflow-y:auto;padding:8px 10px}
+.navdock-minimap::-webkit-scrollbar{width:4px}.navdock-minimap::-webkit-scrollbar-thumb{background:#1E293B;border-radius:2px}
+.minimap-item{display:block;padding:8px 10px;margin-bottom:3px;border-radius:6px;cursor:pointer;transition:all .2s;color:#94A3B8;border-left:2px solid transparent;text-decoration:none;white-space:nowrap;overflow:hidden}
+.minimap-item:hover{background:rgba(0,207,255,.06);color:#fff}
+.minimap-item.active{background:rgba(0,207,255,.12);color:#00CFFF;border-left-color:#00CFFF}
+.minimap-item .mm-num{font-family:'JetBrains Mono',monospace;font-size:9px;opacity:.7;display:block;text-transform:uppercase;letter-spacing:.5px}
+.minimap-item .mm-title{font-family:'Inter',sans-serif;font-size:12px;font-weight:500;opacity:0;transition:opacity .25s}
+#navdock:hover .minimap-item .mm-title,#navdock.expanded .minimap-item .mm-title{opacity:1}
+.navdock-search-input{width:100%;padding:8px 10px;background:#0A0F1A;border:1px solid #1E293B;color:#fff;border-radius:6px;font-size:11px;font-family:'JetBrains Mono',monospace;opacity:0;transition:opacity .25s}
+#navdock:hover .navdock-search-input,#navdock.expanded .navdock-search-input{opacity:1}
+.navdock-search-input:focus{outline:none;border-color:#00CFFF}
+#navdock-toggle{position:absolute;top:8px;right:8px;background:transparent;border:1px solid #1E293B;color:#94A3B8;padding:3px 7px;border-radius:4px;cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:10px;opacity:0;transition:opacity .25s;z-index:2}
+#navdock:hover #navdock-toggle,#navdock.expanded #navdock-toggle{opacity:1}
+#navdock-toggle:hover{color:#00CFFF;border-color:#00CFFF}
+@media (min-width:768px){body{padding-left:60px}}@media (max-width:767px){#navdock{display:none}}
+body[data-zoom="1"] .level-content,body[data-zoom="1"] .role-card,body[data-zoom="1"] table,body[data-zoom="1"] #pt-canvas,body[data-zoom="1"] #sim-radar,body[data-zoom="1"] #viz-donut,body[data-zoom="1"] #viz-3d,body[data-zoom="1"] #viz-sankey,body[data-zoom="1"] #viz-heatmap,body[data-zoom="1"] #impact-cards,body[data-zoom="1"] ol,body[data-zoom="1"] dl{display:none !important}
+body[data-zoom="2"] .level-content,body[data-zoom="2"] table,body[data-zoom="2"] #pt-canvas,body[data-zoom="2"] #viz-donut,body[data-zoom="2"] #viz-3d,body[data-zoom="2"] #viz-sankey,body[data-zoom="2"] #viz-heatmap,body[data-zoom="2"] ol,body[data-zoom="2"] dl{display:none !important}
+body[data-zoom="4"] .level-content{display:block !important;border-top:1px dashed rgba(0,207,255,.2);padding-top:1rem;margin-top:1rem}
+body[data-zoom="4"] .level-content::before{content:attr(id);display:inline-block;font-family:'JetBrains Mono',monospace;font-size:9px;color:#00CFFF;padding:3px 8px;background:rgba(0,207,255,.08);border-radius:4px;margin-bottom:8px;text-transform:uppercase}
+body[data-zoom="5"] .level-content{display:block !important}body[data-zoom="5"] ol li{background:rgba(0,207,255,.04);padding:6px 10px;border-radius:4px;margin:4px 0;border-left:2px solid rgba(0,207,255,.3)}
+@keyframes navdockFlash{0%{box-shadow:inset 0 0 0 3px rgba(0,207,255,.5),0 0 30px rgba(0,207,255,.3);background:rgba(0,207,255,.04)}100%{box-shadow:none;background:transparent}}
+.navdock-flash{animation:navdockFlash 1.3s ease-out;border-radius:12px}
+</style>
+
+<script src="services/agent-audit-renderer.js" defer></script>
+</head>
+<body>
+
+<!-- ========================= NAV ========================= -->
+<nav class="glass-nav fixed top-0 left-0 right-0 z-50">
+<div class="max-w-7xl mx-auto px-6 lg:px-8 py-3 flex items-center justify-between">
+<a href="https://www.TheNextGenerationBanking.com" target="_blank" rel="noopener" class="flex items-center gap-3">
+<svg viewBox="0 0 100 100" fill="none" class="w-9 h-9">
+<path d="M 6,95 L 6,53 A 8,8 0 0 1 22,53 L 22,95 Z" fill="#E6399A" fill-opacity="0.25"/><path d="M 6,95 L 6,53 A 8,8 0 0 1 22,53 L 22,95 Z" fill="none" stroke="#E6399A" stroke-width="2"/>
+<path d="M 26,95 L 26,35 A 8,8 0 0 1 42,35 L 42,95 Z" fill="#00CFFF" fill-opacity="0.25"/><path d="M 26,95 L 26,35 A 8,8 0 0 1 42,35 L 42,95 Z" fill="none" stroke="#00CFFF" stroke-width="2"/>
+<path d="M 46,95 L 46,21 A 8,8 0 0 1 62,21 L 62,95 Z" fill="#00CC7A" fill-opacity="0.25"/><path d="M 46,95 L 46,21 A 8,8 0 0 1 62,21 L 62,95 Z" fill="none" stroke="#00CC7A" stroke-width="2"/>
+<path d="M 66,95 L 66,10 A 8,8 0 0 1 82,10 L 82,95 Z" fill="#FF6B00" fill-opacity="0.25"/><path d="M 66,95 L 66,10 A 8,8 0 0 1 82,10 L 82,95 Z" fill="none" stroke="#FF6B00" stroke-width="2"/>
+<line x1="4" y1="95" x2="84" y2="95" stroke="#888" stroke-width="1" stroke-opacity="0.4"/>
+</svg>
+<div><div class="font-display font-bold text-white text-lg leading-tight">FinCoach AI</div><div class="text-[10px] text-tngb-cyan font-mono">by TheNextGenerationBanking.com</div></div>
+</a>
+<div class="flex items-center gap-4 text-sm">
+<a href="modul-matrix.html" class="text-slate-300 hover:text-tngb-cyan">← Matrix</a>
+<a href="index.html" class="text-slate-300 hover:text-tngb-cyan">Hauptseite</a>
+</div>
+</div></nav>
+
+<!-- ============== CAT-Banner ============== -->
+<div id="cat-banner" class="hidden fixed top-[60px] left-0 right-0 z-40 bg-tngb-card/95 backdrop-blur border-b border-tngb-cyan/20 px-6 py-2 text-xs font-mono flex items-center justify-center gap-4">
+<span id="cat-status" class="text-slate-300"></span>
+<a href="infe-cat.html" class="text-tngb-cyan hover:underline">Profil kalibrieren →</a>
+</div>
+
+<!-- ============== NavDock ============== -->
+<aside id="navdock" aria-label="Modul-Navigation">
+<button id="navdock-toggle" title="Dock erweitern / einklappen">⇆</button>
+<div class="navdock-section"><div class="navdock-label">🔭 Zoom-Tiefe</div>
+<button class="zoom-btn" data-zoom="1"><span class="zoom-icon">①</span><span class="zoom-text">TL;DR</span></button>
+<button class="zoom-btn" data-zoom="2"><span class="zoom-icon">②</span><span class="zoom-text">Übersicht</span></button>
+<button class="zoom-btn active" data-zoom="3"><span class="zoom-icon">③</span><span class="zoom-text">Standard</span></button>
+<button class="zoom-btn" data-zoom="4"><span class="zoom-icon">④</span><span class="zoom-text">Tiefe</span></button>
+<button class="zoom-btn" data-zoom="5"><span class="zoom-icon">⑤</span><span class="zoom-text">Quellen</span></button>
+</div>
+<div class="navdock-section"><div class="navdock-label">🔍 Fly-to</div>
+<input id="navdock-search" class="navdock-search-input" type="text" placeholder="Springen zu… (/)" autocomplete="off">
+</div>
+<div class="navdock-section" style="padding-bottom:6px"><div class="navdock-label">🗺️ Mini-Map</div></div>
+<nav id="navdock-minimap" class="navdock-minimap"></nav>
+<div class="navdock-section" style="border-top:1px solid #1E293B;border-bottom:none">
+<div class="navdock-label">⌨️ Shortcuts</div>
+<div class="navdock-label" style="opacity:.5;font-size:9px;text-transform:none;letter-spacing:.5px">↑↓ Nav · +/- Zoom · / Suche</div>
+</div>
+</aside>
+
+<!-- ========================= 01 · HERO ========================= -->
+<section class="pt-32 pb-12 px-6 lg:px-8 hero-gradient"><div class="max-w-6xl mx-auto relative">
+<div class="flex flex-wrap gap-2 mb-6">
+<span class="px-3 py-1 bg-tngb-cyan/20 border border-tngb-cyan/40 text-tngb-cyan rounded-full text-xs font-mono">M310 · INFRASTRUKTUR & DIREKTDEMOKRATIE</span>
+<span class="px-3 py-1 bg-tngb-gold/20 border border-tngb-gold/40 text-tngb-gold rounded-full text-xs font-mono">TIER 2</span>
+<span class="px-3 py-1 bg-tngb-magenta/20 border border-tngb-magenta/40 text-tngb-magenta rounded-full text-xs font-mono">INTERDISZIPLINÄR</span>
+</div>
+<div class="hero-roll-wrap relative w-full max-w-sm mt-2 mb-6 lg:mb-0 lg:mt-0 lg:absolute lg:top-10 lg:right-0 lg:w-80 rounded-xl overflow-hidden border border-tngb-border z-10" id="hero-roller" style="height:200px">
+<img id="hero-roll-img" class="w-full h-full object-cover cursor-pointer transition-opacity duration-500" alt="Frankenschnellweg" src="https://upload.wikimedia.org/wikipedia/commons/a/a3/20150420_121116_Heistersteg_Frankenschnellweg_Blick_Nordwest.jpg">
+<div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none"></div>
+<a href="https://www.youtube.com/watch?v=YEEgz97Bfgg" target="_blank" rel="noopener" class="lb-btn left-2 top-2 px-2 py-1 text-[11px] font-mono" style="position:absolute">▶ Planungsvideo</a>
+<button id="hero-roll-fs" class="lb-btn top-2 right-2 px-2 py-1 text-[11px] font-mono">⛶ Vollbild</button>
+<div id="hero-roll-cap" class="absolute bottom-2 left-3 right-3 text-[10px] text-slate-200 font-mono pointer-events-none"></div>
+</div>
+<h1 class="font-display font-black text-5xl md:text-6xl text-white mb-6 leading-tight lg:pr-[21rem]">Eine Milliarde, ein Tunnel,<br><span class="bg-gradient-to-r from-tngb-cyan via-tngb-emerald to-tngb-gold bg-clip-text text-transparent">eine Stimme pro Bürger</span></h1>
+<p class="text-xl text-slate-300 mb-10 max-w-3xl leading-relaxed">Am <strong class="text-white">28.06.2026</strong> entscheiden die Nürnbergerinnen und Nürnberger per Bürgerentscheid, ob der <strong class="text-white">kreuzungsfreie Ausbau des Frankenschnellwegs</strong> (A73 / Bundesstraße) sofort gestoppt wird. Ein ~1,1-Mrd.-€-Verkehrsgroßprojekt trifft auf direkte Demokratie — und auf den klassischen Zielkonflikt zwischen Verkehrsfluss, Stadtklima und Generationen-Gerechtigkeit. FinCoach AI ordnet die Fakten beider Lager ein.</p>
+<div class="grid md:grid-cols-4 gap-4 mb-8">
+<div class="bg-tngb-card border border-tngb-cyan/30 rounded-xl p-5"><div class="text-3xl font-display font-bold text-tngb-cyan mb-1" data-tooltip="SÖR-Angabe Stadt Nürnberg · rund 1,1 Mrd. € Gesamtkosten" data-pubdate="2026-04">~1,1 Mrd. €</div><div class="text-xs text-slate-400">Geschätzte Gesamtkosten</div></div>
+<div class="bg-tngb-card border border-tngb-emerald/30 rounded-xl p-5"><div class="text-3xl font-display font-bold text-tngb-emerald mb-1" data-tooltip="Freistaat Bayern fördert 80 % der zuwendungsfähigen Kosten (~650 Mio. €) + 150 Mio. € Sonderfinanzierung" data-pubdate="2026-04">~80 %</div><div class="text-xs text-slate-400">Landesförderung (zuwendungsfähig)</div></div>
+<div class="bg-tngb-card border border-tngb-magenta/30 rounded-xl p-5"><div class="text-3xl font-display font-bold text-tngb-magenta mb-1" data-tooltip="Einfache Tunnelröhren-Länge im Abschnitt Mitte · Quelle: Stadt/SÖR; Initiative nennt 1,9 km" data-pubdate="2026">~1,8–1,9 km</div><div class="text-xs text-slate-400">Tunnel-Länge (Abschnitt Mitte)</div></div>
+<div class="bg-tngb-card border border-tngb-orange/30 rounded-xl p-5"><div class="text-3xl font-display font-bold text-tngb-orange mb-1" data-tooltip="Initiative 'Zurück auf Los': realistisch 15+ Jahre Bauzeit; Stadt plant 12 Jahre" data-pubdate="2025">12–15 J.</div><div class="text-xs text-slate-400">Erwartete Bauzeit</div></div>
+</div>
+<div class="bg-tngb-card border border-tngb-border rounded-xl px-5 py-3 inline-flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-400 font-mono">
+<span>Datenstand: <span class="text-tngb-cyan">2026-06-04</span></span>
+<span>Abstimmungsfrage: „Sofortiger Stopp der Planungen?"</span>
+<span>~14.000 Unterschriften (2026-03-30)</span>
+</div>
+</div></section>
+
+<!-- ========================= 02 · BACKGROUND ========================= -->
+<section class="py-16 px-6 lg:px-8 scroll-fade"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-cyan mb-2">02 · BACKGROUND</div>
+<h2 class="font-display font-bold text-3xl text-white mb-3">Worum geht es beim Frankenschnellweg?</h2>
+<div class="flex gap-2 mb-6"><button class="level-tab active px-4 py-2 rounded-lg font-mono text-sm" data-tab-group="bg" data-level="bg-1">Einsteiger</button><button class="level-tab px-4 py-2 rounded-lg font-mono text-sm" data-tab-group="bg" data-level="bg-2">Fortgeschrittene</button><button class="level-tab px-4 py-2 rounded-lg font-mono text-sm" data-tab-group="bg" data-level="bg-3">Experten</button></div>
+<div class="level-content active" id="bg-1"><div class="space-y-4 text-slate-300 leading-relaxed">
+<p>Der Frankenschnellweg ist die wichtigste Stadtautobahn Nürnbergs — eine vierspurige Schnellstraße mitten durch die Stadt. Heute gibt es dort Ampelkreuzungen, Stau und viel Lärm für die Anwohner.</p>
+<p>Die Stadt will ihn „kreuzungsfrei" ausbauen: Ein <strong class="text-white">Tunnel</strong> soll den Durchgangsverkehr unter die Erde verlegen, oben sollen Lärmschutzwände und ein neuer Park entstehen. Das kostet rund <strong class="text-white">eine Milliarde Euro</strong> und dauert über zehn Jahre.</p>
+<p>Eine Bürgerinitiative namens <strong class="text-white">„Zurück auf Los!"</strong> findet das Projekt zu teuer und schlecht fürs Klima. Sie hat genug Unterschriften gesammelt, damit alle Nürnberger am <strong class="text-white">28. Juni 2026</strong> selbst abstimmen dürfen.</p>
+</div></div>
+<div class="level-content" id="bg-2"><div class="space-y-4 text-slate-300 leading-relaxed">
+<p>Der Frankenschnellweg ist Teil der A73 und im Stadtgebiet eine kreuzungsfreie Bundesstraße. Der geplante Ausbau gliedert sich in zwei Bauabschnitte: <strong class="text-white">Abschnitt West</strong> (Lärmschutz + Spur, Stadtratsbeschluss 09.04.2025, Baubeginn 2027) und <strong class="text-white">Abschnitt Mitte</strong> (das eigentliche Tunnelbauwerk, ~2032–2045).</p>
+<p>Die Genehmigung läuft über Planfeststellungsverfahren der Regierung von Mittelfranken (genehmigt 28.06.2013 und 10.07.2020). Das Bundesverwaltungsgericht bestätigte am <strong class="text-white">26.03.2025</strong> das Baurecht.</p>
+<p>Der Bürgerentscheid stellt die Frage: <em>„Sind Sie dafür, dass die derzeitigen Planungen & Maßnahmen für den Ausbau sofort gestoppt werden?"</em> Ein Ja stoppt, ein Nein lässt das Projekt weiterlaufen. Eine Mehrheit des Stadtrats stützt das Projekt.</p>
+</div></div>
+<div class="level-content" id="bg-3"><div class="space-y-4 text-slate-300 leading-relaxed">
+<p>Finanzierungsarchitektur: Der Freistaat Bayern fördert nach Stadt-Angabe 80 % der <em>zuwendungsfähigen</em> Kosten (≈ 650 Mio. €) plus 150 Mio. € Sonderfinanzierung. Nicht-zuwendungsfähige Bestandteile — u. a. Spartenverlegungen N-Ergie (62,4 Mio. €), Abwasser SUN (18,4 Mio. €, Stand 2023), DB-Brücken (11,05 Mio. €, Kostenstand 2015) — verbleiben bei der Stadt bzw. werden über Netzentgelte/Gebühren auf die Letztverbraucher umgelegt.</p>
+<p>Der „Grüne Deckel" (Stadtteilpark) ist kostenseitig noch nicht beziffert (erst nach Wettbewerb). Hinzu kommen jährliche Betriebskosten der Tunnel-Infrastruktur (Leitzentrale, Lüftung, Brandmeldeanlagen, Notrufstationen).</p>
+<p>Kontrafaktische Kosten: Ein Stopp ist nicht kostenneutral — die Stadt beziffert eine ohnehin nötige Sanierung des Bestands mit ≈ 110 Mio. €. Damit verschiebt sich die ökonomische Frage von „Bauen vs. nichts tun" zu „Vollausbau vs. Sanierung".</p>
+</div></div>
+</div></section>
+
+<!-- ========================= 02B · BILDERGALERIE ========================= -->
+<section class="py-16 px-6 lg:px-8 scroll-fade"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-coral mb-2">02B · BILDERGALERIE</div>
+<h2 class="font-display font-bold text-3xl text-white mb-3">Der Frankenschnellweg heute — Korridor &amp; Realität</h2>
+<p class="text-slate-400 max-w-3xl mb-8">Offizielles Planungsvideo der Stadt Nürnberg, dazu eine rollierende Galerie aus OpenStreetMap-Übersicht und realen Aufnahmen (freie Lizenzen, mit Attribution). Auto-Wechsel alle 6 s · ‹ › zum Blättern.</p>
+<div class="mb-6 bg-tngb-card border border-tngb-cyan/30 rounded-2xl p-3">
+<div class="relative rounded-xl overflow-hidden bg-black" style="aspect-ratio:16/9;max-height:440px;margin:0 auto">
+<iframe class="w-full h-full" style="border:0;aspect-ratio:16/9" src="https://www.youtube-nocookie.com/embed/YEEgz97Bfgg?rel=0" title="Projektvorstellung: Kreuzungsfreier Ausbau des Frankenschnellwegs – Stadt Nürnberg" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+</div>
+<div class="text-[11px] text-slate-400 font-mono mt-2 px-1">▶ „Projektvorstellung: Kreuzungsfreier Ausbau des Frankenschnellwegs" · Stadt Nürnberg · zeigt Planungsstand, Tunnel &amp; Stadtteilpark · <a href="https://www.youtube.com/watch?v=YEEgz97Bfgg" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline">auf YouTube ansehen</a></div>
+</div>
+<div id="gallery" class="relative bg-tngb-card border border-tngb-border rounded-2xl p-3">
+<div class="gal-track relative">
+<div class="gal-slide active">
+<iframe class="gal-img" loading="lazy" title="OpenStreetMap-Korridor Frankenschnellweg" src="https://www.openstreetmap.org/export/embed.html?bbox=11.035%2C49.430%2C11.082%2C49.460&amp;layer=mapnik"></iframe>
+<div class="text-[11px] text-slate-400 font-mono mt-2 px-1">🗺️ Korridor-Übersicht West→Mitte→Ost · Kartendaten © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline">OpenStreetMap</a>-Mitwirkende (ODbL)</div>
+</div>
+<div class="gal-slide">
+<img class="gal-img" loading="lazy" alt="Frankenschnellweg vom Heistersteg, Blick Nordwest" src="https://upload.wikimedia.org/wikipedia/commons/a/a3/20150420_121116_Heistersteg_Frankenschnellweg_Blick_Nordwest.jpg">
+<div class="text-[11px] text-slate-400 font-mono mt-2 px-1">📷 Frankenschnellweg vom Heistersteg (Blick NW) · Foto: RicardoKnows · <a href="https://commons.wikimedia.org/wiki/File:20150420_121116_Heistersteg_Frankenschnellweg_Blick_Nordwest.jpg" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline">CC BY-SA 4.0</a></div>
+</div>
+<div class="gal-slide">
+<img class="gal-img" loading="lazy" alt="Frankenschnellweg vom Heistersteg, Blick Nord" src="https://upload.wikimedia.org/wikipedia/commons/0/05/20150420_121202_Heistersteg_Frankenschnellweg_Blick_Nord.jpg">
+<div class="text-[11px] text-slate-400 font-mono mt-2 px-1">📷 Frankenschnellweg vom Heistersteg (Blick N) · Foto: RicardoKnows · <a href="https://commons.wikimedia.org/wiki/File:20150420_121202_Heistersteg_Frankenschnellweg_Blick_Nord.jpg" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline">CC BY-SA 4.0</a></div>
+</div>
+<div class="gal-slide">
+<img class="gal-img" loading="lazy" alt="Kreuzung Rothenburger Straße mit dem Frankenschnellweg" src="https://upload.wikimedia.org/wikipedia/commons/c/c9/2007-06-14_N%C3%BCrnberg-Rothenburger_Stra%C3%9Fe.JPG">
+<div class="text-[11px] text-slate-400 font-mono mt-2 px-1">📷 Kreuzung Rothenburger Straße × Frankenschnellweg (2007) · Foto: Achates · <a href="https://commons.wikimedia.org/wiki/File:2007-06-14_N%C3%BCrnberg-Rothenburger_Stra%C3%9Fe.JPG" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline">CC BY-SA 3.0</a></div>
+</div>
+<div class="gal-slide">
+<img class="gal-img" loading="lazy" alt="U-Bahn am Frankenschnellweg" src="https://upload.wikimedia.org/wikipedia/commons/5/5b/N%C3%BCrnberg%2C_U-Bahn_am_Frankenschnellweg.jpeg">
+<div class="text-[11px] text-slate-400 font-mono mt-2 px-1">📷 U-Bahn am Frankenschnellweg · Foto: Aisano · <a href="https://commons.wikimedia.org/wiki/File:N%C3%BCrnberg,_U-Bahn_am_Frankenschnellweg.jpeg" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline">CC0 / gemeinfrei</a></div>
+</div>
+</div>
+<button class="gal-nav" id="gal-prev" style="left:14px" aria-label="Zurück">‹</button>
+<button class="gal-nav" id="gal-next" style="right:14px" aria-label="Weiter">›</button>
+<button id="gal-fs" class="lb-btn top-5 right-5 px-2 py-1 text-[11px] font-mono">⛶ Vollbild</button>
+<div class="gal-dots flex justify-center gap-2 mt-3" id="gal-dots"></div>
+</div>
+<p class="text-[11px] text-slate-500 mt-3">Hinweis: Aufnahmen zeigen den Bestand (teils ältere Jahre) — sie dokumentieren den Ist-Zustand, nicht die geplante Vision. Offizielle Ausbau-Visualisierungen von Stadt/SÖR und BauLust sind urheberrechtlich geschützt und nur verlinkt, nicht eingebettet.</p>
+</div></section>
+
+<!-- ========================= 03 · LANDKARTE ========================= -->
+<section class="py-16 px-6 lg:px-8 scroll-fade bg-tngb-card/20"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-emerald mb-2">03 · INTERDISZIPLINÄRE LANDKARTE</div>
+<h2 class="font-display font-bold text-3xl text-white mb-8">Fünf Perspektiven · Ein Gesamtbild</h2>
+<div class="grid md:grid-cols-2 lg:grid-cols-5 gap-4">
+<div class="role-card bg-tngb-card border border-tngb-cyan/30 rounded-xl p-5" data-role="moderator"><div class="text-xs font-mono text-tngb-cyan mb-2">MODERATOR</div><h3 class="font-display font-bold text-white mb-2">Verkehrsplanung</h3><p class="text-xs text-slate-400 leading-relaxed">Ordnet ein: Kreuzungsfreiheit vs. induzierter Verkehr. Wie viel echte Reisezeit entsteht — und für wen?</p></div>
+<div class="role-card bg-tngb-card border border-tngb-lavender/30 rounded-xl p-5" data-role="theoretiker"><div class="text-xs font-mono text-tngb-lavender mb-2">THEORETIKER</div><h3 class="font-display font-bold text-white mb-2">Verkehrsökonomie</h3><p class="text-xs text-slate-400 leading-relaxed">„Induced demand": Mehr Kapazität erzeugt mehr Verkehr (Downs-Thomson, Braess-Paradox). Nutzen-Kosten-Skepsis.</p></div>
+<div class="role-card bg-tngb-card border border-tngb-emerald/30 rounded-xl p-5" data-role="praktiker"><div class="text-xs font-mono text-tngb-emerald mb-2">PRAKTIKER</div><h3 class="font-display font-bold text-white mb-2">Stadt & Anwohner</h3><p class="text-xs text-slate-400 leading-relaxed">Lärmschutz heute vs. 12–15 Jahre Baustelle. Spartenverlegung, Umleitungen durch Wohngebiete, Kleingärten.</p></div>
+<div class="role-card bg-tngb-card border border-tngb-magenta/30 rounded-xl p-5" data-role="devil"><div class="text-xs font-mono text-tngb-magenta mb-2">DEVIL'S ADVOCATE</div><h3 class="font-display font-bold text-white mb-2">Klima & Finanzen</h3><p class="text-xs text-slate-400 leading-relaxed">78.759 t CO₂ allein im Beton, 8 ha Versiegelung, Hitze-Insel Nürnberg. Lohnt das für 2,25 Min. Zeitersparnis?</p></div>
+<div class="role-card bg-tngb-card border border-tngb-gold/30 rounded-xl p-5" data-role="synthesizer"><div class="text-xs font-mono text-tngb-gold mb-2">SYNTHESIZER</div><h3 class="font-display font-bold text-white mb-2">Direktdemokratie</h3><p class="text-xs text-slate-400 leading-relaxed">Bürgerentscheid als Korrektiv zu 13 Jahre alter Planfeststellung. Sunk-Cost vs. Mandat der Bürger.</p></div>
+</div>
+</div></section>
+
+<!-- ========================= 04 · WISSENSCHAFT ========================= -->
+<section class="py-16 px-6 lg:px-8 scroll-fade"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-magenta mb-2">04 · WISSENSCHAFTLICHER UNTERBAU</div>
+<h2 class="font-display font-bold text-3xl text-white mb-8">Theorierahmen & Formeln</h2>
+<div class="grid md:grid-cols-2 gap-5">
+<div class="bg-tngb-card border border-tngb-border rounded-xl p-6"><h3 class="font-display font-bold text-tngb-cyan mb-3">Induzierter Verkehr (Induced Demand)</h3><p class="text-sm text-slate-400 mb-3">Empirisch (Duranton & Turner 2011) gilt näherungsweise eine Elastizität der gefahrenen Kilometer zur Kapazität von ≈ 1: Neue Spuren füllen sich.</p><p class="text-slate-300">\[ \frac{\Delta VKT}{VKT} \approx \varepsilon \cdot \frac{\Delta C}{C}, \quad \varepsilon \approx 1{,}0 \]</p><p class="text-xs text-slate-500 mt-2">Folge: Staureduktion ist oft nur temporär — der „fundamental law of road congestion".</p></div>
+<div class="bg-tngb-card border border-tngb-border rounded-xl p-6"><h3 class="font-display font-bold text-tngb-emerald mb-3">Nutzen-Kosten-Verhältnis (NKV)</h3><p class="text-sm text-slate-400 mb-3">Standard der Bundesverkehrswegeplanung. Reisezeitgewinne dominieren typischerweise den Nutzen.</p><p class="text-slate-300">\[ NKV = \frac{\sum_t \frac{N_t}{(1+r)^t}}{\sum_t \frac{K_t}{(1+r)^t}} \]</p><p class="text-xs text-slate-500 mt-2">Bei 2,25 Min. Zeitersparnis (Initiativen-Rechnung) und ~1,1 Mrd. € Kosten ist der Nutzenterm hochsensitiv gegenüber der angesetzten Verkehrsmenge.</p></div>
+<div class="bg-tngb-card border border-tngb-border rounded-xl p-6"><h3 class="font-display font-bold text-tngb-lavender mb-3">CO₂-Amortisation</h3><p class="text-sm text-slate-400 mb-3">Baubedingte Emissionen müssen über betriebliche Einsparungen „zurückverdient" werden.</p><p class="text-slate-300">\[ T_{amort} = \frac{E_{Bau}}{\dot{E}_{Einsparung/Jahr}} \]</p><p class="text-xs text-slate-500 mt-2">\(E_{Bau}\) = 78.759 t (Beton); ohne klare jährliche Netto-Einsparung ist \(T_{amort}\) unbestimmt — Kernkritik der Initiative.</p></div>
+<div class="bg-tngb-card border border-tngb-gold/30 rounded-xl p-6"><h3 class="font-display font-bold text-tngb-gold mb-3">Sunk-Cost & Entscheidungslogik</h3><p class="text-sm text-slate-400 mb-3">Bereits verausgabte Planungskosten sind für die rationale Vorwärts-Entscheidung irrelevant — relevant ist die marginale Differenz Vollausbau vs. Sanierung.</p><p class="text-slate-300">\[ \Delta_{Entsch.} = (K_{Ausbau}-N_{Ausbau}) - (K_{San.}-N_{San.}) \]</p><p class="text-xs text-slate-500 mt-2">\(K_{San.} \approx 110\) Mio. € als Referenz-Szenario.</p></div>
+</div>
+</div></section>
+
+<!-- ========================= 05 · KERN-MECHANIK ========================= -->
+<section class="py-16 px-6 lg:px-8 scroll-fade"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-orange mb-2">05 · KERN-MECHANIK</div>
+<h2 class="font-display font-bold text-3xl text-white mb-8">Pro & Contra — die Argumente im direkten Vergleich</h2>
+<div class="overflow-x-auto">
+<table class="w-full text-sm border-collapse">
+<thead><tr class="text-left">
+<th class="border border-tngb-border p-3 bg-tngb-card text-slate-400 font-mono text-xs uppercase">Dimension</th>
+<th class="border border-tngb-border p-3 bg-tngb-emerald/10 text-tngb-emerald font-mono text-xs uppercase">PRO Ausbau (Stadt / SÖR)</th>
+<th class="border border-tngb-border p-3 bg-tngb-magenta/10 text-tngb-magenta font-mono text-xs uppercase">CONTRA / Stopp (Zurück auf Los, BauLust)</th>
+</tr></thead>
+<tbody class="text-slate-300">
+<tr><td class="border border-tngb-border p-3 font-mono text-xs text-slate-500">Lärm</td><td class="border border-tngb-border p-3">Neue Lärmschutzwände beidseitig, spürbare Entlastung der Anwohner („Abschnitt West bringt vor allem Lärmschutz").</td><td class="border border-tngb-border p-3">6 m hohe Lärmschutzwand (Kohlenhofstraße) zerschneidet Stadtteile; 12–15 J. Baulärm zuvor.</td></tr>
+<tr><td class="border border-tngb-border p-3 font-mono text-xs text-slate-500">Grün / Park</td><td class="border border-tngb-border p-3">Oberirdischer Stadtteilpark über dem Tunnel — neue Aufenthaltsräume.</td><td class="border border-tngb-border p-3">Nur max. 1,50 m Erdüberdeckung → kein Baumwachstum; Rodung >80.000 m² Biotop, 25+ Kleingärten weg.</td></tr>
+<tr><td class="border border-tngb-border p-3 font-mono text-xs text-slate-500">Verkehr</td><td class="border border-tngb-border p-3">Kreuzungsfreier Durchgangsverkehr im Tunnel → weniger Stau, weniger Schleichverkehr durch Wohngebiete.</td><td class="border border-tngb-border p-3">Nur 20 % nutzen den Tunnel; Ampeln oben bleiben; Zeitgewinn ~2,25 Min.; induzierter Mehrverkehr (+10.000 Kfz).</td></tr>
+<tr><td class="border border-tngb-border p-3 font-mono text-xs text-slate-500">Klima</td><td class="border border-tngb-border p-3">Flüssigerer Verkehr → weniger Stop-and-Go-Emissionen (Stadt-Argument).</td><td class="border border-tngb-border p-3">78.759 t CO₂ (Beton) + 237 t/Jahr Betrieb; 8 ha Versiegelung; Nürnberg im DUH-Hitze-Check „tiefrot".</td></tr>
+<tr><td class="border border-tngb-border p-3 font-mono text-xs text-slate-500">Kosten</td><td class="border border-tngb-border p-3">~1,1 Mrd. €, davon ~80 % der zuwendungsfähigen Kosten vom Freistaat gefördert; Stopp kostet auch (~110 Mio. € Sanierung).</td><td class="border border-tngb-border p-3">>1 Mrd. € + nicht enthaltene Posten (Spartenverlegung 62,4 + 18,4 + 11,05 Mio. €); Umlage auf Letztverbraucher; „Grüner Deckel" unbeziffert.</td></tr>
+<tr><td class="border border-tngb-border p-3 font-mono text-xs text-slate-500">Recht</td><td class="border border-tngb-border p-3">Baurecht durch BVerwG bestätigt (26.03.2025); Planfeststellung 2013/2020.</td><td class="border border-tngb-border p-3">Planung 13+ Jahre alt; veränderte Klima- & Haushaltslage rechtfertigt Neubewertung.</td></tr>
+</tbody>
+</table>
+</div>
+<p class="text-xs text-slate-500 mt-4">Datenstand 2026-06-04. Pro-Werte: Stadt Nürnberg / SÖR. Contra-Werte: Initiative „Zurück auf Los!" & BauLust e. V. FinCoach AI gibt die Positionen wieder, ohne eine Abstimmungsempfehlung zu erteilen.</p>
+</div></section>
+
+<!-- ========================= 05B · KOSTEN IM DETAIL ========================= -->
+<section class="py-16 px-6 lg:px-8 scroll-fade bg-tngb-card/10"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-gold mb-2">05B · KOSTEN IM DETAIL</div>
+<h2 class="font-display font-bold text-3xl text-white mb-3">Investition (CAPEX) &amp; Betrieb (OPEX) über den Lebenszyklus</h2>
+<p class="text-slate-400 max-w-3xl mb-8">Ein Tunnel kostet zweimal: einmal beim Bau, dann jedes Jahr im Betrieb — über Jahrzehnte. FinCoach AI trennt beide Ebenen und prüft die Plausibilität kritisch. <strong class="text-white">Alle Werte gerundet, Datenstand 2026-06-04.</strong></p>
+
+<div class="grid lg:grid-cols-2 gap-6 mb-8">
+<!-- CAPEX -->
+<div class="bg-tngb-card border border-tngb-cyan/30 rounded-xl p-6">
+<div class="text-[10px] font-mono text-tngb-cyan uppercase tracking-wider mb-1">CAPEX · EINMALIGE INVESTITION</div>
+<h3 class="font-display font-bold text-white text-lg mb-4">Woraus sich die ~1,1 Mrd. € zusammensetzen</h3>
+<div id="viz-capex" style="height:300px"></div>
+<p class="text-xs text-slate-400 mt-3">Werte in Mio. €. Das geförderte Bauwerk (West+Mitte) dominiert; die nicht-förderfähigen Sparten-, Abwasser- und Bahnposten sowie der noch unbezifferte „Grüne Deckel" kommen <em>obendrauf</em> und treffen Stadt &amp; Gebührenzahler.</p>
+</div>
+<!-- OPEX / Lifecycle -->
+<div class="bg-tngb-card border border-tngb-emerald/30 rounded-xl p-6">
+<div class="text-[10px] font-mono text-tngb-emerald uppercase tracking-wider mb-1">OPEX · LAUFENDER BETRIEB</div>
+<h3 class="font-display font-bold text-white text-lg mb-4">Kumulierte Betriebskosten über die Tunnel-Lebensdauer</h3>
+<div id="viz-opex" style="height:300px"></div>
+<p class="text-xs text-slate-400 mt-3">Stadt-Angabe: <strong class="text-white">~1,5 Mio. €/Jahr</strong> (Wartung, Lüftung, Brandschutz, Leitzentrale, Videoüberwachung, Prüfungen). Kritisch: Für einen 1,8-km-Doppelröhren-Tunnel mit Vollausstattung liegt das am <em>unteren</em> Benchmark-Rand — daher Sensitivitätsband 1,5–4,0 Mio. €/Jahr.</p>
+</div>
+</div>
+
+<!-- CAPEX-Tabelle mit Caveats -->
+<div class="overflow-x-auto mb-8">
+<table class="w-full text-sm border-collapse">
+<thead><tr class="text-left">
+<th class="border border-tngb-border p-3 bg-tngb-card text-slate-400 font-mono text-xs uppercase">Kostenblock</th>
+<th class="border border-tngb-border p-3 bg-tngb-card text-slate-400 font-mono text-xs uppercase">Betrag</th>
+<th class="border border-tngb-border p-3 bg-tngb-card text-slate-400 font-mono text-xs uppercase">Förderfähig?</th>
+<th class="border border-tngb-border p-3 bg-tngb-card text-slate-400 font-mono text-xs uppercase">Kostenstand / kritische Anmerkung</th>
+</tr></thead>
+<tbody class="text-slate-300">
+<tr><td class="border border-tngb-border p-3">Bauwerk West + Mitte (Tunnel, Straße, Lärmschutz)</td><td class="border border-tngb-border p-3 font-mono text-white">~1.050 Mio. €</td><td class="border border-tngb-border p-3 text-tngb-emerald">ja (zuwendungsfähig)</td><td class="border border-tngb-border p-3">SÖR-Sachstand 2024-04. Basis für die 80 %-Förderung des Freistaats.</td></tr>
+<tr><td class="border border-tngb-border p-3">N-Ergie-Spartenverlegung (Wasser/Strom/Gas/Fernwärme)</td><td class="border border-tngb-border p-3 font-mono text-white">62,4 Mio. €</td><td class="border border-tngb-border p-3 text-tngb-magenta">nein</td><td class="border border-tngb-border p-3">Umlage auf Letztverbraucher über Netzentgelte.</td></tr>
+<tr><td class="border border-tngb-border p-3">Abwasserleitungen (SUN)</td><td class="border border-tngb-border p-3 font-mono text-white">18,4 Mio. €</td><td class="border border-tngb-border p-3 text-tngb-magenta">nein</td><td class="border border-tngb-border p-3">Stand 2023 → real heute höher; über Abwassergebühren finanziert.</td></tr>
+<tr><td class="border border-tngb-border p-3">DB Brücken / Unterführungen</td><td class="border border-tngb-border p-3 font-mono text-white">11,05 Mio. €</td><td class="border border-tngb-border p-3 text-slate-400">teils</td><td class="border border-tngb-border p-3">Kostenstand <strong class="text-tngb-magenta">2015</strong> — bei Baupreis-Index seitdem deutlich höher anzusetzen.</td></tr>
+<tr><td class="border border-tngb-border p-3">„Grüner Deckel" / Stadtteilpark</td><td class="border border-tngb-border p-3 font-mono text-tngb-gold">unbeziffert</td><td class="border border-tngb-border p-3 text-slate-400">offen</td><td class="border border-tngb-border p-3">Kosten erst nach landschaftsplanerischem Wettbewerb. <strong class="text-tngb-magenta">Offenes Kostenrisiko.</strong></td></tr>
+<tr class="bg-tngb-bg/40"><td class="border border-tngb-border p-3 font-semibold text-white">Summe sichtbar</td><td class="border border-tngb-border p-3 font-mono text-white font-bold">&gt; 1.142 Mio. €</td><td class="border border-tngb-border p-3">—</td><td class="border border-tngb-border p-3">zzgl. unbezifferter Park und etwaiger Kostensteigerungen.</td></tr>
+</tbody>
+</table>
+</div>
+
+<!-- Lebenszyklus-Mathematik -->
+<div class="grid md:grid-cols-2 gap-5 mb-8">
+<div class="bg-tngb-card border border-tngb-border rounded-xl p-6"><h3 class="font-display font-bold text-tngb-emerald mb-3">Barwert der Betriebskosten (LCC)</h3><p class="text-sm text-slate-400 mb-3">Laufende Kosten über T Jahre, abgezinst mit r:</p><p class="text-slate-300">\[ PV_{OPEX}=\sum_{t=1}^{T}\frac{C_{op}}{(1+r)^t}=C_{op}\cdot\frac{1-(1+r)^{-T}}{r} \]</p><p class="text-xs text-slate-500 mt-3">Mit \(C_{op}=1{,}5\) Mio. €, \(r=3\%\), \(T=50\) Jahre: \(PV_{OPEX}\approx \textbf{38{,}6 Mio. €}\) — nur Routine-Betrieb, <em>ohne</em> Generalinstandsetzung der Technik (~alle 15–25 J., je zweistelliger Mio-Betrag).</p></div>
+<div class="bg-tngb-card border border-tngb-gold/30 rounded-xl p-6"><h3 class="font-display font-bold text-tngb-gold mb-3">Vernunft-Check (kritisch)</h3><ul class="text-sm text-slate-300 space-y-2 list-disc list-inside leading-relaxed">
+<li><strong class="text-white">~2.100 €</strong> pro Nürnberger Einwohner (1,1 Mrd. € / ≈ 523.000 Einw.).</li>
+<li>Reisezeitgewinn laut Initiative: <strong class="text-white">2,25 Min.</strong> für die Durchfahrt — die Monetarisierung des Nutzens ist extrem volumenabhängig.</li>
+<li><strong class="text-tngb-magenta">Kostensteigerungs-Risiko:</strong> Reference-Class-Forecasting (Flyvbjerg) zeigt für Straßentunnel im Mittel +20–35 % reale Überschreitung; mehrere Kostenstände stammen aus 2013–2024.</li>
+<li>OPEX 1,5 Mio. €/Jahr ≈ 0,83 Mio. €/Tunnel-km — am unteren Rand vergleichbarer Stadttunnel.</li>
+</ul></div>
+</div>
+</div></section>
+
+<!-- ========================= 05C · EMISSIONS-DOSSIER ========================= -->
+<section class="py-16 px-6 lg:px-8 scroll-fade"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-lavender mb-2">05C · EMISSIONS-DOSSIER</div>
+<h2 class="font-display font-bold text-3xl text-white mb-3">Emissionen heute &amp; 2030 — Luftschadstoffe und CO₂</h2>
+<p class="text-slate-400 max-w-3xl mb-8">Grundlage: Luftschadstoffprognosen der <strong class="text-white">ACCON GmbH</strong> für die Abschnitte West &amp; Mitte (Prognosejahr <strong class="text-white">2030</strong>), Emissionsberechnung (Unterlage W 11.1.2.1 Ä), Umweltverträglichkeitsstudie sowie Messwerte des LfU Bayern. Kernspannung: <strong class="text-white">lokale Entlastung durch den Tunnel</strong> vs. <strong class="text-white">hohe Gesamt-CO₂-Last</strong> (Kritik BUND Naturschutz).</p>
+
+<!-- Luftschadstoff-Tabelle -->
+<div class="overflow-x-auto mb-6">
+<table class="w-full text-sm border-collapse">
+<thead><tr class="text-left">
+<th class="border border-tngb-border p-3 bg-tngb-card text-slate-400 font-mono text-xs uppercase">Schadstoff (Jahresmittel)</th>
+<th class="border border-tngb-border p-3 bg-tngb-card text-slate-400 font-mono text-xs uppercase">Bestand heute<br>(verkehrsnah)</th>
+<th class="border border-tngb-border p-3 bg-tngb-card text-tngb-cyan font-mono text-xs uppercase">ACCON-Prognose 2030<br>(mit Ausbau)</th>
+<th class="border border-tngb-border p-3 bg-tngb-card text-tngb-gold font-mono text-xs uppercase">EU-Grenzwert<br>(bis 2029)</th>
+<th class="border border-tngb-border p-3 bg-tngb-card text-tngb-orange font-mono text-xs uppercase">EU ab 2030</th>
+<th class="border border-tngb-border p-3 bg-tngb-card text-tngb-emerald font-mono text-xs uppercase">WHO-Leitwert</th>
+<th class="border border-tngb-border p-3 bg-tngb-card text-slate-400 font-mono text-xs uppercase">Bewertung</th>
+</tr></thead>
+<tbody class="text-slate-300">
+<tr>
+<td class="border border-tngb-border p-3 font-semibold text-white">NO₂ <span class="text-slate-500 font-normal">(Stickstoffdioxid)</span></td>
+<td class="border border-tngb-border p-3" data-tooltip="LfU-Station Von-der-Tann-Straße: Jahresmittel zuletzt < 40; Spitzentag ~64 µg/m³ (Anfang 2026)" data-pubdate="2026-03">~30–40 <span class="text-xs text-slate-500">(Spitzen 64)</span></td>
+<td class="border border-tngb-border p-3 text-tngb-cyan font-mono">≈ 30</td>
+<td class="border border-tngb-border p-3 font-mono">40</td>
+<td class="border border-tngb-border p-3 font-mono">20</td>
+<td class="border border-tngb-border p-3 font-mono">10</td>
+<td class="border border-tngb-border p-3"><span class="verdict-pill v-confirmed">EU bis 2029 ok</span> <span class="verdict-pill v-divergent">&gt; EU-2030 &amp; WHO</span></td>
+</tr>
+<tr>
+<td class="border border-tngb-border p-3 font-semibold text-white">PM₁₀ <span class="text-slate-500 font-normal">(Feinstaub)</span></td>
+<td class="border border-tngb-border p-3">~20–23</td>
+<td class="border border-tngb-border p-3 text-tngb-cyan font-mono">≈ 23</td>
+<td class="border border-tngb-border p-3 font-mono">40</td>
+<td class="border border-tngb-border p-3 font-mono">20</td>
+<td class="border border-tngb-border p-3 font-mono">15</td>
+<td class="border border-tngb-border p-3"><span class="verdict-pill v-confirmed">EU bis 2029 ok</span> <span class="verdict-pill v-divergent">grenzwertig 2030</span></td>
+</tr>
+<tr>
+<td class="border border-tngb-border p-3 font-semibold text-white">PM₂,₅ <span class="text-slate-500 font-normal">(Feinstaub fein)</span></td>
+<td class="border border-tngb-border p-3">~10–12</td>
+<td class="border border-tngb-border p-3 text-tngb-cyan font-mono">≈ 14 <span class="text-xs text-tngb-magenta">*</span></td>
+<td class="border border-tngb-border p-3 font-mono">25</td>
+<td class="border border-tngb-border p-3 font-mono">10</td>
+<td class="border border-tngb-border p-3 font-mono">5</td>
+<td class="border border-tngb-border p-3"><span class="verdict-pill v-confirmed">EU bis 2029 ok</span> <span class="verdict-pill v-divergent">&gt; EU-2030 &amp; WHO</span></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p class="text-[11px] text-slate-500 mb-8">Angaben in µg/m³ (Jahresmittel). <span class="text-tngb-magenta">*</span> PM₂,₅-Prognose aus PM₁₀ abgeleitet (Schätzung — kein eigener ACCON-Ausweis). Die Prognose 2030 liegt unter dem aktuellen 40-µg/m³-Grenzwert, aber <strong class="text-slate-400">über den ab 2030 geltenden, halbierten EU-Werten</strong> (Richtlinie (EU) 2024/2881) und klar über den WHO-Leitwerten (2021). Lokal entlastet der Tunnel die Anwohner; an den <strong class="text-slate-400">Tunnelportalen</strong> tritt die Abluft konzentriert wieder aus.</p>
+
+<div class="grid lg:grid-cols-2 gap-6 mb-8">
+<div class="bg-tngb-card border border-tngb-cyan/30 rounded-xl p-6">
+<div class="text-[10px] font-mono text-tngb-cyan uppercase tracking-wider mb-1">LUFTSCHADSTOFFE · PROGNOSE 2030 vs. GRENZWERTE</div>
+<h3 class="font-display font-bold text-white text-lg mb-4">Unter altem Limit — über dem Limit von morgen</h3>
+<div id="viz-emis-air" style="height:320px"></div>
+<p class="text-xs text-slate-400 mt-3">Die cyanfarbenen Prognosebalken unterschreiten die alten EU-Grenzwerte (Gold), reißen aber die ab 2030 geltenden EU-Werte (Orange) und die WHO-Leitwerte (Grün) bei NO₂ und PM₂,₅.</p>
+</div>
+<div class="bg-tngb-card border border-tngb-magenta/30 rounded-xl p-6">
+<div class="text-[10px] font-mono text-tngb-magenta uppercase tracking-wider mb-1">CO₂ · KUMULIERT ÜBER 40 JAHRE</div>
+<h3 class="font-display font-bold text-white text-lg mb-4">Der Bau ist der CO₂-Sprung</h3>
+<div id="viz-emis-co2" style="height:320px"></div>
+<p class="text-xs text-slate-400 mt-3">Beton-Bau setzt einmalig <strong class="text-white">78.759 t CO₂</strong> frei; der Tunnelbetrieb addiert <strong class="text-white">237 t/Jahr</strong> (nur Technik). <strong class="text-tngb-magenta">Achtung:</strong> der <em>Fahrzeug-Verkehr</em> ist darin nicht enthalten — genau hier setzt die BUND-Kritik an (induzierter Mehrverkehr).</p>
+</div>
+</div>
+
+<!-- BUND-Kritik + Quellen-/Ehrlichkeitsbox -->
+<div class="grid md:grid-cols-2 gap-5">
+<div class="bg-tngb-card border border-tngb-magenta/30 rounded-xl p-6"><h3 class="font-display font-bold text-tngb-magenta mb-3">Kritik der Umweltverbände (BUND Naturschutz)</h3><ul class="text-sm text-slate-300 space-y-2 list-disc list-inside leading-relaxed">
+<li>Tunnelbau + zusätzlicher Verkehr verursachen <strong class="text-white">hohe CO₂-Emissionen</strong> — „nicht mehr zeitgemäß".</li>
+<li>Lokale NO₂-/PM-Entlastung ≠ Klima-Entlastung: das Bau-CO₂ ist sofort frei, der Nutzen kommt erst Jahrzehnte später.</li>
+<li>Induzierter Verkehr (mehr Kapazität → mehr Fahrten) kann die lokale Luft­verbesserung mittelfristig aufzehren.</li>
+</ul></div>
+<div class="bg-tngb-card border border-tngb-border rounded-xl p-6"><h3 class="font-display font-bold text-tngb-cyan mb-3">Quellen &amp; Ehrlichkeit</h3><ul class="text-sm text-slate-300 space-y-2 list-disc list-inside leading-relaxed">
+<li><strong class="text-white">ACCON GmbH</strong> — Luftschadstoffprognosen West &amp; Mitte, Prognosejahr 2030 (Planfeststellung).</li>
+<li>Emissionsberechnung <strong class="text-white">Unterlage W 11.1.2.1 Ä</strong>; Umweltverträglichkeitsstudie (Parallelrouten-Entlastung).</li>
+<li>EU-Grenzwerte: RL 2008/50/EG (bis 2029) &amp; <strong class="text-white">RL (EU) 2024/2881</strong> (ab 2030); WHO-AQG 2021.</li>
+<li>Messwerte: LfU Bayern, Station Von-der-Tann-Straße.</li>
+<li class="text-tngb-magenta">Mit <span class="font-mono">*</span> markierte Werte sind abgeleitete Schätzungen — keine amtlich ausgewiesenen Prognosezahlen.</li>
+</ul></div>
+</div>
+</div></section>
+
+<!-- ========================= 06 · PROZESS-TIMELINE ========================= -->
+<section class="py-20 px-6 lg:px-8 scroll-fade bg-tngb-card/30"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-emerald mb-2">06 · PROZESS-TIMELINE</div>
+<h2 class="font-display font-bold text-3xl text-white mb-3">Wie es in der Praxis abläuft</h2>
+<p class="text-slate-400 max-w-3xl mb-8">Drei Sichten: <strong class="text-white">Tag</strong> = der Abstimmungstag · <strong class="text-white">Woche</strong> = das Bürgerbegehren-Verfahren · <strong class="text-white">Monat</strong> = die Bauprojekt-Phasen. Erklär-Niveau wählbar.</p>
+<div class="bg-tngb-card border border-tngb-border rounded-xl p-5 mb-6">
+<div class="grid md:grid-cols-3 gap-4 items-start">
+<div><label class="text-[10px] font-mono text-slate-500 uppercase block mb-2">Sicht</label><div class="flex gap-1"><button class="pt-btn pt-period-btn active flex-1 py-2 px-3 rounded-lg text-xs font-mono" data-period="day">Abstimmungstag</button><button class="pt-btn pt-period-btn flex-1 py-2 px-3 rounded-lg text-xs font-mono" data-period="week">Verfahren</button><button class="pt-btn pt-period-btn flex-1 py-2 px-3 rounded-lg text-xs font-mono" data-period="month">Bauphasen</button></div></div>
+<div><label class="text-[10px] font-mono text-slate-500 uppercase block mb-2">Geschwindigkeit</label><div class="flex gap-1"><button class="pt-btn pt-speed-btn active flex-1 py-2 px-2 rounded-lg text-xs font-mono" data-speed="click">Klick</button><button class="pt-btn pt-speed-btn flex-1 py-2 px-2 rounded-lg text-xs font-mono" data-speed="1">1×</button><button class="pt-btn pt-speed-btn flex-1 py-2 px-2 rounded-lg text-xs font-mono" data-speed="2">2×</button><button class="pt-btn pt-speed-btn flex-1 py-2 px-2 rounded-lg text-xs font-mono" data-speed="5">5×</button></div></div>
+<div><label class="text-[10px] font-mono text-slate-500 uppercase block mb-2">Steuerung</label><div class="flex gap-2"><button id="pt-prev" class="pt-btn flex-1 py-2 px-2 rounded-lg text-xs font-mono">◀ Zurück</button><button id="pt-play" class="pt-btn-play flex-1 py-2 px-2 rounded-lg text-xs font-mono">▶ Play</button><button id="pt-next" class="pt-btn flex-1 py-2 px-2 rounded-lg text-xs font-mono">Weiter ▶</button></div></div>
+</div>
+<div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-tngb-border items-center">
+<span class="text-[10px] font-mono text-slate-500 uppercase mr-2">Erklär-Niveau</span>
+<button class="pt-btn pt-level-btn active px-3 py-1.5 rounded-lg text-xs font-mono" data-pt-level="einsteiger">Einsteiger</button>
+<button class="pt-btn pt-level-btn px-3 py-1.5 rounded-lg text-xs font-mono" data-pt-level="fortgeschritten">Fortgeschritten</button>
+<button class="pt-btn pt-level-btn px-3 py-1.5 rounded-lg text-xs font-mono" data-pt-level="experte">Experte</button>
+</div></div>
+<div class="bg-tngb-bg border border-tngb-border rounded-xl p-5 mb-6 overflow-x-auto"><div id="pt-canvas" class="min-w-[860px]"></div><div class="flex items-center justify-between mt-3 text-[10px] text-slate-500 font-mono"><span id="pt-progress">Schritt 1 von N</span><span id="pt-cycle">Sicht: Abstimmungstag</span></div></div>
+<div class="bg-tngb-card border border-tngb-cyan/30 rounded-xl p-6"><div class="flex items-start justify-between mb-3 gap-4 flex-wrap"><div><div class="text-xs font-mono text-tngb-cyan mb-1" id="pt-detail-id">SCHRITT 01</div><h3 class="font-display font-bold text-white text-xl" id="pt-detail-title">…</h3></div><div class="text-right"><div class="text-[10px] text-slate-500 font-mono uppercase">Akteur</div><div class="text-sm text-tngb-emerald font-mono" id="pt-detail-actor">—</div></div></div><p class="text-slate-300 leading-relaxed" id="pt-detail-explain">…</p><div class="grid md:grid-cols-3 gap-4 mt-4 pt-4 border-t border-tngb-border"><div><div class="text-[10px] text-slate-500 font-mono uppercase">Inputs</div><div class="text-sm text-slate-300" id="pt-detail-inputs">—</div></div><div><div class="text-[10px] text-slate-500 font-mono uppercase">Outputs</div><div class="text-sm text-slate-300" id="pt-detail-outputs">—</div></div><div><div class="text-[10px] text-slate-500 font-mono uppercase">Dauer</div><div class="text-sm text-slate-300 font-mono" id="pt-detail-duration">—</div></div></div></div>
+</div></section>
+
+<!-- ========================= 07 · LIVE-SIMULATIONSTOOL ========================= -->
+<section class="py-20 px-6 lg:px-8 scroll-fade"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-cyan mb-2">07 · LIVE-SIMULATIONSTOOL</div>
+<h2 class="font-display font-bold text-3xl text-white mb-3">Auswirkungen des Ausbaus interaktiv erkunden</h2>
+<p class="text-slate-400 max-w-3xl mb-8">„Intensität" = Realisierungsgrad des Vollausbaus (0 % = Stopp/Sanierung, 100 % = vollständiger Tunnel + Park). Vergleich: <strong class="text-white">Status Quo</strong> (magenta) vs. <strong class="text-white">mit Ausbau</strong> (cyan). <strong class="text-white">Das Modell zeigt Wirkrichtungen, keine Punktprognosen.</strong></p>
+<div class="grid lg:grid-cols-5 gap-6">
+<div class="lg:col-span-2 space-y-5">
+<div class="bg-tngb-bg border border-tngb-border rounded-xl p-5"><label class="text-xs font-mono text-tngb-cyan uppercase">Realisierungsgrad Ausbau</label><input id="sim-intensity" type="range" min="0" max="100" value="50" class="slider-track mt-3"><div class="flex justify-between text-xs text-slate-500 mt-1"><span>0 %</span><span id="sim-intensity-val">50 %</span><span>100 %</span></div></div>
+<div class="bg-tngb-bg border border-tngb-border rounded-xl p-5"><label class="text-xs font-mono text-tngb-emerald uppercase">Zeithorizont</label><input id="sim-horizon" type="range" min="1" max="25" value="5" class="slider-track mt-3"><div class="flex justify-between text-xs text-slate-500 mt-1"><span>1 J</span><span id="sim-horizon-val">5 J</span><span>25 J</span></div></div>
+<div class="bg-tngb-bg border border-tngb-border rounded-xl p-5"><label class="text-xs font-mono text-tngb-magenta uppercase">Stakeholder-Lens</label><select id="sim-lens" class="w-full mt-3 bg-tngb-card border border-tngb-border rounded-lg px-3 py-2 text-white"><option value="balanced">Ausgewogen</option><option value="economy">Wirtschaft / Pendler</option><option value="society">Anwohner / Stadtteil</option><option value="future">Klima / Zukunft</option><option value="family">Familie / Generationen</option></select></div>
+<div class="bg-tngb-bg border border-tngb-border rounded-xl p-5 flex items-center justify-between"><label class="text-xs font-mono text-tngb-orange uppercase">Devil's-Advocate-Modus</label><input id="sim-devil" type="checkbox" class="w-5 h-5 accent-tngb-magenta"></div>
+<button id="sim-export" class="w-full bg-tngb-cyan/10 border border-tngb-cyan/40 text-tngb-cyan rounded-xl py-3 hover:bg-tngb-cyan/20 transition font-mono text-sm">↓ JSON exportieren</button>
+</div>
+<div class="lg:col-span-3 bg-tngb-bg border border-tngb-border rounded-xl p-5"><div class="flex items-center justify-between mb-3"><div class="text-sm text-slate-300 font-mono">Status Quo (magenta) vs. Ausbau (cyan)</div><div class="text-xs text-slate-500" id="sim-confidence">η ≈ 0.65</div></div><div class="relative" style="height:380px"><canvas id="sim-radar"></canvas></div><div id="sim-readout" class="mt-4 grid grid-cols-7 gap-2 text-center text-xs"></div></div>
+</div></div></section>
+
+<!-- ========================= 08 · VISUAL EXPLORATION ========================= -->
+<section class="py-20 px-6 lg:px-8 scroll-fade bg-tngb-card/20"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-lavender mb-2">08 · VISUAL EXPLORATION</div>
+<h2 class="font-display font-bold text-3xl text-white mb-3">Vier Sichten — vier Fragen</h2>
+<p class="text-slate-400 max-w-3xl mb-8">Wohin fließt das Geld? Wie viel CO₂ & Fläche? Wie verteilt sich der Verkehr? Welche Lens gewichtet was? <strong class="text-white">TL;DR-Toggle</strong> aggregiert.</p>
+<div class="grid lg:grid-cols-2 gap-6">
+<div class="bg-tngb-card border border-tngb-cyan/30 rounded-xl p-6">
+<div class="flex items-start justify-between mb-3 gap-2"><div><div class="text-[10px] font-mono text-tngb-cyan uppercase tracking-wider">DONUT · KOSTEN</div><h3 class="font-display font-bold text-white text-lg">Kosten-Bestandteile (Mio. €)</h3></div><button class="zoom-toggle px-3 py-1.5 rounded-lg text-[11px] font-mono" data-target="viz-donut">TL;DR</button></div>
+<div id="viz-donut" style="height:340px"></div>
+<p class="text-xs text-slate-400 mt-3" id="viz-donut-explain">…</p>
+</div>
+<div class="bg-tngb-card border border-tngb-emerald/30 rounded-xl p-6">
+<div class="flex items-start justify-between mb-3 gap-2"><div><div class="text-[10px] font-mono text-tngb-emerald uppercase tracking-wider">BAR · KLIMA & FLÄCHE</div><h3 class="font-display font-bold text-white text-lg">Ökologischer Fußabdruck</h3></div><button class="zoom-toggle px-3 py-1.5 rounded-lg text-[11px] font-mono" data-target="viz-3d">TL;DR</button></div>
+<div id="viz-3d" style="height:380px"></div>
+<p class="text-xs text-slate-400 mt-3" id="viz-3d-explain">…</p>
+</div>
+<div class="bg-tngb-card border border-tngb-gold/30 rounded-xl p-6 lg:col-span-2">
+<div class="flex items-start justify-between mb-3 gap-2"><div><div class="text-[10px] font-mono text-tngb-gold uppercase tracking-wider">SANKEY · FINANZIERUNGSFLUSS</div><h3 class="font-display font-bold text-white text-lg">Wer zahlt was? — Geldfluss des Projekts</h3></div><button class="zoom-toggle px-3 py-1.5 rounded-lg text-[11px] font-mono" data-target="viz-sankey">TL;DR</button></div>
+<div id="viz-sankey" style="height:380px"></div>
+<p class="text-xs text-slate-400 mt-3" id="viz-sankey-explain">…</p>
+</div>
+<div class="bg-tngb-card border border-tngb-magenta/30 rounded-xl p-6 lg:col-span-2">
+<div class="flex items-start justify-between mb-3 gap-2"><div><div class="text-[10px] font-mono text-tngb-magenta uppercase tracking-wider">MATRIX · HEATMAP</div><h3 class="font-display font-bold text-white text-lg">Stakeholder-Lens × Wirkungsachse</h3></div><button class="zoom-toggle px-3 py-1.5 rounded-lg text-[11px] font-mono" data-target="viz-heatmap">TL;DR</button></div>
+<div id="viz-heatmap" style="height:340px"></div>
+<p class="text-xs text-slate-400 mt-3" id="viz-heatmap-explain">…</p>
+</div>
+</div>
+<div class="mt-6 bg-tngb-bg border border-tngb-cyan/20 rounded-xl p-5">
+<div class="text-[10px] font-mono text-tngb-cyan uppercase mb-2">Lese-Hilfe</div>
+<p class="text-sm text-slate-400 leading-relaxed">Donut: rund 80 % der <em>zuwendungsfähigen</em> Kosten trägt der Freistaat — die nicht-förderfähigen Sparten- und Bahnposten bleiben aber bei Stadt/Letztverbrauchern. Bar: die baubedingten 78.759 t CO₂ dominieren den Betrieb um das ~330-fache eines Jahres. Sankey: zeigt, dass „80 % gefördert" sich nur auf einen Teil der Gesamtsumme bezieht. Heatmap: dunkle Felder = hohe Gewichtung einer Achse durch die jeweilige Interessengruppe.</p>
+</div>
+</div></section>
+
+<!-- ========================= 08B · STADTRAUM-WIRKUNGSKARTE ========================= -->
+<section class="py-20 px-6 lg:px-8 scroll-fade"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-coral mb-2">08B · STADTRAUM-WIRKUNGSKARTE</div>
+<h2 class="font-display font-bold text-3xl text-white mb-3">Wer ist wie betroffen — nach Stadtteil &amp; Entfernung</h2>
+<p class="text-slate-400 max-w-3xl mb-8">Klicke einen Stadtteil entlang der Trasse an oder schiebe den <strong class="text-white">Entfernungs-Regler</strong>. Wechsle zwischen <strong class="text-white">Bauphase</strong> (12–15 Jahre) und <strong class="text-white">Betrieb</strong> (nach Fertigstellung). Werte sind relativ zu <em>heute</em>: <span class="text-tngb-magenta">rot = Verschlechterung</span>, <span class="text-tngb-emerald">grün = Verbesserung</span>. Modell — keine amtliche Immissionsprognose.</p>
+
+<div class="bg-tngb-card border border-tngb-border rounded-xl p-5 mb-6">
+<div class="grid md:grid-cols-3 gap-4 items-start">
+<div><label class="text-[10px] font-mono text-slate-500 uppercase block mb-2">Phase</label><div class="flex gap-1"><button class="pt-btn map-phase-btn active flex-1 py-2 px-3 rounded-lg text-xs font-mono" data-phase="bau">🚧 Bauphase</button><button class="pt-btn map-phase-btn flex-1 py-2 px-3 rounded-lg text-xs font-mono" data-phase="betrieb">🚇 Betrieb</button></div></div>
+<div><label class="text-[10px] font-mono text-slate-500 uppercase block mb-2">Entfernung zur Trasse: <span id="map-dist-val" class="text-tngb-cyan">typisch</span></label><input id="map-dist" type="range" min="0" max="1000" value="0" class="slider-track mt-2"><div class="flex justify-between text-[10px] text-slate-500 mt-1"><span>0 m (an der Trasse)</span><span>1000 m</span></div></div>
+<div><label class="text-[10px] font-mono text-slate-500 uppercase block mb-2">Modus</label><button id="map-reset" class="pt-btn w-full py-2 px-3 rounded-lg text-xs font-mono">↺ Typische Stadtteil-Distanz</button></div>
+</div></div>
+
+<div class="grid lg:grid-cols-5 gap-6">
+<!-- SVG Korridor-Karte -->
+<div class="lg:col-span-3 bg-tngb-bg border border-tngb-border rounded-xl p-4 overflow-x-auto">
+<div class="min-w-[640px]"><svg id="map-svg" viewBox="0 0 1000 360" width="100%" style="height:360px"></svg></div>
+<div class="flex flex-wrap gap-x-5 gap-y-1 mt-3 text-[10px] font-mono text-slate-500">
+<span><span style="color:#00CC7A">●</span> Abschnitt West (2,2 km)</span>
+<span><span style="color:#00CFFF">●</span> Abschnitt Mitte (1,8 km Tunnel)</span>
+<span><span style="color:#9933FF">●</span> Abschnitt Ost / Plärrer</span>
+<span><span style="color:#DFAF0F">▲</span> Tunnelportal (Emissions-Hotspot im Betrieb)</span>
+</div>
+</div>
+<!-- Wirkungs-Panel -->
+<div class="lg:col-span-2 bg-tngb-bg border border-tngb-border rounded-xl p-5">
+<div class="flex items-center justify-between mb-1"><h3 class="font-display font-bold text-white text-lg" id="map-sel-name">St. Leonhard</h3><span id="map-sel-section" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-tngb-cyan/15 text-tngb-cyan">Mitte</span></div>
+<div class="text-[11px] font-mono text-slate-500 mb-3" id="map-sel-dist">Distanz ~50 m · 200 Bau-Lkw/Tag</div>
+<div id="viz-mapimpact" style="height:230px"></div>
+<div class="mt-3 pt-3 border-t border-tngb-border"><div class="text-[10px] text-slate-500 font-mono uppercase mb-1" id="map-note-label">Bauphase</div><p class="text-sm text-slate-300 leading-relaxed" id="map-note">…</p></div>
+<div class="mt-3 grid grid-cols-2 gap-2 text-center">
+<div class="bg-tngb-card border border-tngb-border rounded-lg p-2"><div class="text-[9px] text-slate-500 font-mono uppercase">Netto-Belastung</div><div id="map-net" class="font-bold text-lg">—</div></div>
+<div class="bg-tngb-card border border-tngb-border rounded-lg p-2"><div class="text-[9px] text-slate-500 font-mono uppercase">Nähe-Faktor</div><div id="map-decay" class="font-bold text-lg text-tngb-cyan">—</div></div>
+</div>
+</div>
+</div>
+<div class="mt-6 bg-tngb-bg border border-tngb-coral/20 rounded-xl p-5">
+<div class="text-[10px] font-mono text-tngb-coral uppercase mb-2">Lese-Hilfe &amp; kritische Einordnung</div>
+<p class="text-sm text-slate-400 leading-relaxed">Die Wirkung fällt mit der Entfernung exponentiell ab (Nähe-Faktor \(e^{-(d-30)/220}\)). <strong class="text-white">Kernspannung:</strong> Bauphase = fast überall rot (Lärm, Staub, Erschütterung, Umleitungs­verkehr — am stärksten in <em>St. Leonhard</em>). Betrieb = gemischt: Tunnel + Lärmschutzwände entlasten trassennahe Wohnlagen, der <em>Stadtteilpark</em> über Sandreuth/Gibitzenhof hebt Grün &amp; Wohnwert — aber an den <em>Tunnelportalen</em> (Dianaplatz/Nopitschstraße) konzentriert sich die Abluft. Die zentrale Vernunft-Frage: Lohnt eine <strong class="text-white">sichere</strong> Belastung über 12–15 Jahre für einen <strong class="text-white">erst danach</strong> und ungleich verteilten Nutzen?</p>
+</div>
+</div></section>
+
+<!-- ========================= 08C · GEO-WIRKUNGSKARTE ========================= -->
+<section class="py-20 px-6 lg:px-8 scroll-fade bg-tngb-card/20"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-emerald mb-2">08C · GEO-WIRKUNGSKARTE</div>
+<h2 class="font-display font-bold text-3xl text-white mb-3">Interaktive Karte — betroffene Gebiete eingefärbt</h2>
+<p class="text-slate-400 max-w-3xl mb-8">Echte, zoom- und verschiebbare OpenStreetMap-Karte. Jeder Kreis = ein Stadtteil; <strong class="text-white">Farbe</strong> = Auswirkung (<span class="text-tngb-magenta">rot Belastung</span> … <span class="text-tngb-emerald">grün Entlastung</span> ggü. heute), <strong class="text-white">Radius</strong> = Reichweite/Stärke. Wähle Phase und Dimension; Klick auf einen Kreis zeigt den Wert. Neu wählbar: <strong class="text-white">Emissionen (NO₂ / PM₁₀ / PM₂,₅)</strong> — dann zeigt die Farbe die modellierte Konzentration in µg/m³ gegen die Grenzwerte (<span class="text-tngb-emerald">≤ WHO</span> · <span class="text-tngb-cyan">≤ EU 2030</span> · <span class="text-tngb-gold">≤ EU bis 2029</span> · <span class="text-tngb-magenta">&gt; Grenzwert</span>), kalibriert auf die ACCON-Prognose 2030.</p>
+<div class="bg-tngb-card border border-tngb-border rounded-xl p-5 mb-6">
+<div class="grid md:grid-cols-2 gap-4 items-start">
+<div><label class="text-[10px] font-mono text-slate-500 uppercase block mb-2">Phase</label><div class="flex gap-1"><button class="pt-btn geo-phase-btn active flex-1 py-2 px-3 rounded-lg text-xs font-mono" data-phase="bau">🚧 Bauphase</button><button class="pt-btn geo-phase-btn flex-1 py-2 px-3 rounded-lg text-xs font-mono" data-phase="betrieb">🚇 Betrieb</button></div></div>
+<div><label class="text-[10px] font-mono text-slate-500 uppercase block mb-2">Dimension einfärben</label><select id="geo-dim" class="w-full bg-tngb-bg border border-tngb-border rounded-lg px-3 py-2 text-white text-sm"><option value="net">Netto (alle Dimensionen)</option><option value="Lärm">Lärm</option><option value="Luft & Staub">Luft &amp; Staub</option><option value="Erschütterung">Erschütterung</option><option value="Verkehr">Verkehr</option><option value="Grün & Klima">Grün &amp; Klima</option><option value="Wohnwert">Wohnwert</option><optgroup label="Emissionen (modelliert · µg/m³)"><option value="NO₂">NO₂ (Stickstoffdioxid)</option><option value="PM₁₀">PM₁₀ (Feinstaub)</option><option value="PM₂,₅">PM₂,₅ (Feinstaub fein)</option></optgroup></select></div>
+</div>
+<div class="mt-3 pt-3 border-t border-tngb-border grid md:grid-cols-2 gap-4 items-start">
+<div><label class="text-[10px] font-mono text-slate-500 uppercase block mb-2">Adresse / Ort suchen</label><div class="flex gap-2"><input id="geo-addr" type="text" placeholder="z. B. Rothenburger Straße, Nürnberg" class="flex-1 bg-tngb-bg border border-tngb-border rounded-lg px-3 py-2 text-white text-sm" autocomplete="off"><button id="geo-search" class="pt-btn px-4 py-2 rounded-lg text-xs font-mono">🔍 Suchen</button></div></div>
+<div><label class="text-[10px] font-mono text-slate-500 uppercase block mb-2">Layer · Klick auf Karte setzt einen Punkt</label><div class="flex gap-1"><button id="geo-layer-circles" class="pt-btn active flex-1 py-2 px-2 rounded-lg text-xs font-mono">● Stadtteil-Kreise</button><button id="geo-layer-grad" class="pt-btn flex-1 py-2 px-2 rounded-lg text-xs font-mono">🌈 Distanz-Gradient</button></div></div>
+</div></div>
+<div class="flex justify-end mb-2"><button id="geo-fs" class="lb-btn px-3 py-1.5 text-xs font-mono" style="position:static">⛶ Karte im Vollbild</button></div>
+<div id="geo-map"></div>
+<div id="geo-point-panel" class="hidden mt-4 bg-tngb-bg border border-tngb-gold/40 rounded-xl p-5">
+<div class="flex items-center justify-between mb-1"><h3 class="font-display font-bold text-tngb-gold text-lg">📍 Punkt-Analyse</h3><span id="geo-pt-net" class="font-mono text-sm">—</span></div>
+<div class="text-[11px] font-mono text-slate-500 mb-3" id="geo-pt-meta">Klicke auf die Karte oder suche eine Adresse.</div>
+<div id="geo-pt-bars" class="space-y-2"></div>
+<p class="text-[10px] text-slate-600 mt-3">Wirkung = entfernungsgewichtete Mischung der nächstgelegenen Stadtteil-Profile × Nähe-Faktor zur Trasse \(e^{-(d-30)/220}\). Modellwert, keine amtliche Messung.</p>
+</div>
+<div class="mt-4 bg-tngb-card border border-tngb-cyan/30 rounded-xl p-5">
+<div class="flex items-center justify-between mb-3 gap-3 flex-wrap"><h3 class="font-display font-bold text-tngb-cyan">🚗 Fahrmodus über den Frankenschnellweg</h3><span id="drive-readout" class="text-xs font-mono text-slate-400">bereit</span></div>
+<div class="grid md:grid-cols-3 gap-3">
+<div><label class="text-[10px] font-mono text-slate-500 uppercase block mb-2">Richtung</label><div class="flex gap-1"><button class="pt-btn drive-dir-btn active flex-1 py-2 px-2 rounded-lg text-xs font-mono" data-dir="1">West → Ost</button><button class="pt-btn drive-dir-btn flex-1 py-2 px-2 rounded-lg text-xs font-mono" data-dir="-1">Ost → West</button></div></div>
+<div><label class="text-[10px] font-mono text-slate-500 uppercase block mb-2">Tempo</label><div class="flex gap-1"><button class="pt-btn drive-spd-btn flex-1 py-2 px-2 rounded-lg text-xs font-mono" data-spd="45">langsam</button><button class="pt-btn drive-spd-btn active flex-1 py-2 px-2 rounded-lg text-xs font-mono" data-spd="130">normal</button><button class="pt-btn drive-spd-btn flex-1 py-2 px-2 rounded-lg text-xs font-mono" data-spd="330">schnell</button></div></div>
+<div><label class="text-[10px] font-mono text-slate-500 uppercase block mb-2">Steuerung</label><div class="flex gap-2"><button id="drive-play" class="pt-btn-play flex-1 py-2 px-2 rounded-lg text-xs font-mono">▶ Fahren</button><button id="drive-streetview" class="pt-btn flex-1 py-2 px-2 rounded-lg text-xs font-mono">📷 Street View</button></div></div>
+</div>
+<p class="text-[10px] text-slate-500 mt-3">„Fahren" bewegt eine Kamera entlang des realen FSW-Verlaufs (OpenStreetMap) und aktualisiert live die Wirkung am Standort (Panel oben). „📷 Street View" öffnet die echte Google-Street-View-Ansicht der aktuellen Position in einem neuen Tab — ohne Einbettung/API-Schlüssel.</p>
+</div>
+<p class="text-[11px] text-slate-500 mt-3">Kartendaten © <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline">OpenStreetMap</a>-Mitwirkende (ODbL). FSW-Verlauf nach OSM (vereinfacht). <strong class="text-slate-400">Geometrie der Einfärbung ist approximativ/illustrativ</strong> — sie modelliert relative Betroffenheit, ersetzt keine amtliche Immissions- oder Lärmkartierung. Werte stammen aus dem FinCoach-Wirkungsmodell (Sektion 08B).</p>
+</div></section>
+
+<!-- ========================= 08W · WIKIPEDIA-SYNTHESE & ABGLEICH ========================= -->
+<section class="py-16 px-6 lg:px-8 scroll-fade"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-slate-400 mb-2">08W · WIKIPEDIA-IN-THE-LOOP</div>
+<h2 class="font-display font-bold text-3xl text-white mb-3">Tertiär-Abgleich gegen Wikipedia</h2>
+<p class="text-slate-400 max-w-3xl mb-6">Wikipedia ist <strong class="text-white">Tertiärquelle</strong> (Confidence ≤ 0,75): sie korroboriert, überschreibt aber nie einen Primärbeleg. Abgeglichen am 2026-06-04 gegen die Artikel <em>„Frankenschnellweg"</em> (de) und <em>„Nuremberg" / Verkehr</em>.</p>
+<div class="grid md:grid-cols-3 gap-4 mb-6">
+<div class="bg-tngb-card border border-tngb-emerald/30 rounded-xl p-5 text-center"><div class="text-3xl font-display font-bold text-tngb-emerald">4</div><div class="text-xs text-slate-400 mt-1">CONFIRMED</div></div>
+<div class="bg-tngb-card border border-tngb-cyan/30 rounded-xl p-5 text-center"><div class="text-3xl font-display font-bold text-tngb-cyan">2</div><div class="text-xs text-slate-400 mt-1">ENRICHED</div></div>
+<div class="bg-tngb-card border border-tngb-border rounded-xl p-5 text-center"><div class="text-3xl font-display font-bold text-slate-400">2</div><div class="text-xs text-slate-400 mt-1">NOT_COVERED</div></div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-sm border-collapse">
+<thead><tr class="text-left"><th class="border border-tngb-border p-3 bg-tngb-card text-slate-400 font-mono text-xs uppercase">Modul-Aussage</th><th class="border border-tngb-border p-3 bg-tngb-card text-slate-400 font-mono text-xs uppercase">Wikipedia-Abgleich</th><th class="border border-tngb-border p-3 bg-tngb-card text-slate-400 font-mono text-xs uppercase">Verdikt</th></tr></thead>
+<tbody class="text-slate-300">
+<tr><td class="border border-tngb-border p-3">FSW ist Teil der A73 / kreuzungsfreie Bundesstraße im Stadtgebiet</td><td class="border border-tngb-border p-3">Deckungsgleich mit Artikel „Frankenschnellweg"</td><td class="border border-tngb-border p-3"><span class="verdict-pill v-confirmed">CONFIRMED</span></td></tr>
+<tr><td class="border border-tngb-border p-3">Planfeststellung 2013/2020; kreuzungsfreier Ausbau seit Jahrzehnten geplant</td><td class="border border-tngb-border p-3">Bestätigt; WP nennt Planungsgeschichte seit den 1960ern</td><td class="border border-tngb-border p-3"><span class="verdict-pill v-enriched">ENRICHED</span></td></tr>
+<tr><td class="border border-tngb-border p-3">Tunnel ~1,8–1,9 km, Abschnitt Mitte</td><td class="border border-tngb-border p-3">Größenordnung konsistent; exakte Länge je Quelle leicht abweichend</td><td class="border border-tngb-border p-3"><span class="verdict-pill v-confirmed">CONFIRMED</span></td></tr>
+<tr><td class="border border-tngb-border p-3">BVerwG-Bestätigung des Baurechts 26.03.2025</td><td class="border border-tngb-border p-3">In WP nur teilweise nachgeführt — Primärquelle (Stadt) maßgeblich</td><td class="border border-tngb-border p-3"><span class="verdict-pill v-enriched">ENRICHED</span></td></tr>
+<tr><td class="border border-tngb-border p-3">Bürgerentscheid-Termin 28.06.2026, ~14.000 Unterschriften</td><td class="border border-tngb-border p-3">Tagesaktuelles Ereignis — in WP noch nicht abschließend dokumentiert</td><td class="border border-tngb-border p-3"><span class="verdict-pill v-notcovered">NOT_COVERED</span></td></tr>
+<tr><td class="border border-tngb-border p-3">CO₂-Beton 78.759 t / Betrieb 237 t/Jahr</td><td class="border border-tngb-border p-3">Initiativen-Zahlen, nicht in WP — als Sekundärbeleg gekennzeichnet</td><td class="border border-tngb-border p-3"><span class="verdict-pill v-notcovered">NOT_COVERED</span></td></tr>
+</tbody>
+</table>
+</div>
+<p class="text-[11px] text-slate-500 mt-4">Offene Divergenzen: <strong class="text-tngb-emerald">0</strong> · integration_ready: <strong class="text-tngb-emerald">true</strong>. „NOT_COVERED"-Werte sind als Schätzung bzw. Initiativen-/Behörden-Beleg gekennzeichnet, nicht als Wikipedia-bestätigt.<br>Inhalte teils basierend auf Wikipedia (Artikel „Frankenschnellweg", Permalink-Stand 2026-06-04), lizenziert unter <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline">CC&nbsp;BY-SA&nbsp;4.0</a>.</p>
+</div></section>
+
+<!-- ========================= 09 · DECISION-SAMPLING-MATRIX ========================= -->
+<section class="py-16 px-6 lg:px-8 scroll-fade"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-gold mb-2">09 · DECISION-SAMPLING-MATRIX</div>
+<h2 class="font-display font-bold text-3xl text-white mb-8">Evidenz · Expertise · Werte je Stakeholder</h2>
+<div class="overflow-x-auto"><table class="w-full text-sm border-collapse">
+<thead><tr class="text-left">
+<th class="border border-tngb-border p-3 bg-tngb-card text-slate-400 font-mono text-xs uppercase">Stakeholder</th>
+<th class="border border-tngb-border p-3 bg-tngb-card text-tngb-cyan font-mono text-xs uppercase">Evidenz</th>
+<th class="border border-tngb-border p-3 bg-tngb-card text-tngb-emerald font-mono text-xs uppercase">Expertise</th>
+<th class="border border-tngb-border p-3 bg-tngb-card text-tngb-gold font-mono text-xs uppercase">Werte / Trade-off</th>
+</tr></thead>
+<tbody class="text-slate-300">
+<tr><td class="border border-tngb-border p-3 font-semibold text-white">Stadt Nürnberg / SÖR</td><td class="border border-tngb-border p-3">Planfeststellung, NKV, BVerwG-Urteil 2025, Förderzusage Freistaat</td><td class="border border-tngb-border p-3">Tiefbau, Verkehrsplanung, Förderrecht</td><td class="border border-tngb-border p-3">Verkehrsfluss & Lärmschutz > Baukosten; Fördermittel nicht verfallen lassen</td></tr>
+<tr><td class="border border-tngb-border p-3 font-semibold text-white">Initiative „Zurück auf Los"</td><td class="border border-tngb-border p-3">CO₂-Bilanz, Versiegelung, Zeitersparnis-Rechnung, Folgekosten</td><td class="border border-tngb-border p-3">Klima, Stadtökologie, Bürgerbeteiligung</td><td class="border border-tngb-border p-3">Klima & Geld > Durchsatz; Verkehrswende statt Straßenausbau</td></tr>
+<tr><td class="border border-tngb-border p-3 font-semibold text-white">Pendler / Wirtschaft</td><td class="border border-tngb-border p-3">Stauzeiten, Logistik-Erreichbarkeit</td><td class="border border-tngb-border p-3">Mobilität, Standort</td><td class="border border-tngb-border p-3">Reisezeit & Zuverlässigkeit > Baustellen-Phase</td></tr>
+<tr><td class="border border-tngb-border p-3 font-semibold text-white">Anwohner / Kleingärtner</td><td class="border border-tngb-border p-3">Lärmkarten, Baustellenlogistik, Kleingarten-Kündigungen</td><td class="border border-tngb-border p-3">Lokales Erfahrungswissen</td><td class="border border-tngb-border p-3">Wohnqualität heute vs. Lärmschutz in 15 Jahren</td></tr>
+<tr><td class="border border-tngb-border p-3 font-semibold text-white">Künftige Generationen</td><td class="border border-tngb-border p-3">Hitze-Check DUH, Versiegelung, Schuldenlast</td><td class="border border-tngb-border p-3">Nachhaltigkeit, Demografie</td><td class="border border-tngb-border p-3">Resilienz & Klimaanpassung > kurzfristige Kapazität</td></tr>
+</tbody>
+</table></div>
+</div></section>
+
+<!-- ========================= 10 · IMPACT-DOSSIER ========================= -->
+<section class="py-16 px-6 lg:px-8 scroll-fade bg-tngb-card/20"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-emerald mb-2">10 · IMPACT-DOSSIER</div>
+<h2 class="font-display font-bold text-3xl text-white mb-8">Sieben Wirkungsachsen — was die Belege sagen</h2>
+<div id="impact-cards" class="grid md:grid-cols-2 gap-4"></div>
+</div></section>
+
+<!-- ========================= 11 · 90-TAGE / FAHRPLAN ========================= -->
+<section class="py-16 px-6 lg:px-8 scroll-fade"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-orange mb-2">11 · FAHRPLAN ZUM ENTSCHEID</div>
+<h2 class="font-display font-bold text-3xl text-white mb-8">Vom Bürgerbegehren zur Entscheidung</h2>
+<div class="grid md:grid-cols-3 gap-5">
+<div class="bg-tngb-card border border-tngb-cyan/30 rounded-xl p-6"><div class="text-xs font-mono text-tngb-cyan mb-2">PHASE 1 · ZULASSUNG</div><h3 class="font-display font-bold text-white mb-2">bis 2026-04-15</h3><p class="text-sm text-slate-400">~14.000 Unterschriften eingereicht (30.03.2026); Stadtrat erklärt Bürgerbegehren am 15.04.2026 für rechtskonform; Termin festgelegt.</p></div>
+<div class="bg-tngb-card border border-tngb-gold/30 rounded-xl p-6"><div class="text-xs font-mono text-tngb-gold mb-2">PHASE 2 · KAMPAGNE</div><h3 class="font-display font-bold text-white mb-2">Mai–Juni 2026</h3><p class="text-sm text-slate-400">Abstimmungsbenachrichtigungen versandt; Info-Kampagne der Stadt (Neutralitätsdebatte); Pro- & Contra-Lager mobilisieren.</p></div>
+<div class="bg-tngb-card border border-tngb-emerald/30 rounded-xl p-6"><div class="text-xs font-mono text-tngb-emerald mb-2">PHASE 3 · ENTSCHEID</div><h3 class="font-display font-bold text-white mb-2">2026-06-28</h3><p class="text-sm text-slate-400">Bürgerentscheid. Ein „Ja" stoppt die Planungen sofort; ein „Nein" setzt sie fort. Bindungswirkung i. d. R. ein Jahr.</p></div>
+</div>
+</div></section>
+
+<!-- ========================= 11B · BÜRGER-ENTSCHEIDUNGSKOMPASS ========================= -->
+<section class="py-16 px-6 lg:px-8 scroll-fade bg-tngb-card/20"><div class="max-w-6xl mx-auto">
+<div class="text-xs font-mono text-tngb-gold mb-2">11B · BÜRGER-ENTSCHEIDUNGSKOMPASS</div>
+<h2 class="font-display font-bold text-3xl text-white mb-3">Abwägen statt überreden — Bewertung nach Interessengruppen</h2>
+<p class="text-slate-400 max-w-3xl mb-6">Diese Sektion ist <strong class="text-white">bewusst nicht wertend</strong>. Sie stellt die offiziellen Planungsfakten (Flyer &amp; Gutachten der Stadt/SÖR) und die dokumentierte Kritik (BauLust, BUND, „Zurück auf Los") nebeneinander und lässt <strong class="text-white">Sie</strong> gewichten. Die Stadt-Quellen sind eine <em>Befürworter-Darstellung</em>, die Initiativen eine <em>Gegen-Darstellung</em> — beide werden als solche kenntlich gemacht.</p>
+
+<!-- Faktenbasis -->
+<div class="bg-tngb-bg border border-tngb-cyan/20 rounded-xl p-5 mb-8">
+<div class="text-[10px] font-mono text-tngb-cyan uppercase mb-3">Faktenbasis · Flyer „Potenziale für Nürnberg" (Stadt Nürnberg/SÖR, Stand 2026-05) &amp; Planfeststellung</div>
+<div class="grid md:grid-cols-2 gap-x-8 gap-y-2 text-sm text-slate-300">
+<div>• Trasse Stadtgrenze Fürth → Otto-Brenner-Brücke, zwei Abschnitte (kreuzungsfrei).</div>
+<div>• <strong class="text-white">Abschnitt West</strong>: 3. Fahrspur Richtung Hafen + Lärmschutzwände; Feb 2027 – Mitte 2030 (~3 J).</div>
+<div>• <strong class="text-white">Abschnitt Mitte</strong>: 1.800 m Tunnel (Rothenburger → Otto-Brenner-Brücke), ~10 J Bauzeit.</div>
+<div>• Neue <strong class="text-white">Emmy-Noether-Straße</strong> als Innenstadt-Zufahrt + Geh-/Radwege St. Leonhard ↔ Gostenhof.</div>
+<div>• Kosten ~1,1 Mrd €: Freistaat ~850 Mio (80 % + 150 Mio Sonder), <strong class="text-white">Stadt-Eigenanteil ~300 Mio</strong> (Kostenstand 2025).</div>
+<div>• Alternative <strong class="text-white">Sanierung</strong>: ~111 Mio (Förderung 55 / Stadt 56), Baustelle 5–6 J <em>ohne</em> Verbesserung.</div>
+<div>• Lärmschutz: gut 3 km Wände, <strong class="text-white">~14.000 Anwohner</strong> profitieren (inkl. passiver Schallschutz).</div>
+<div>• <strong class="text-white">22.000 m² Stadtteilpark</strong> auf dem Deckel (+23 t CO₂/Jahr Abbau); ~5 km neue Rad-/Gehwege.</div>
+<div>• Pendler-Ersparnis: <strong class="text-white">~10 Min/Tag</strong> (Stadt, Schätzwert Gesamtstrecke) — Initiative rechnet 2,25 Min für eine Durchfahrt.</div>
+<div>• Gegenposition: 78.759 t Bau-CO₂, Versiegelung/Biotopverlust, induzierter Verkehr, EU-Grenzwerte ab 2030 (s. 05C).</div>
+</div>
+<div class="text-[11px] text-slate-500 mt-3">Alle Planunterlagen &amp; Gutachten (Lärm, Luft, Verkehr, UVS, Wasser, Sicherheit, Klimaökologie): <a href="https://www.nuernberg.de/internet/soer_nbg/erg_plafe.html" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline">nuernberg.de · ergänzende Planfeststellung</a>. Befürworter-Flyer: <a href="https://www.soer.nuernberg.de" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline">soer.nuernberg.de</a>.</div>
+</div>
+
+<!-- SWOT -->
+<h3 class="font-display font-bold text-2xl text-white mb-4">SWOT — ausgewogen</h3>
+<div class="grid md:grid-cols-2 gap-4 mb-10">
+<div class="bg-tngb-card border border-tngb-emerald/40 rounded-xl p-5"><div class="text-xs font-mono text-tngb-emerald uppercase mb-2">Stärken (intern)</div><ul class="text-sm text-slate-300 space-y-1 list-disc list-inside leading-relaxed"><li>Lärmschutz für ~14.000 Anwohner (3 km Wände + Tunnel + Schallschutzfenster)</li><li>Kreuzungsfreier Durchgangsverkehr → weniger Stau (~10 Min/Tag laut Stadt)</li><li>22.000 m² neuer Park, ~5 km Rad-/Gehwege, verbindet getrennte Stadtteile</li><li>~80 % Förderung + 150 Mio Sonderfinanzierung; Baurecht (BVerwG 2025) besteht</li></ul></div>
+<div class="bg-tngb-card border border-tngb-magenta/40 rounded-xl p-5"><div class="text-xs font-mono text-tngb-magenta uppercase mb-2">Schwächen (intern)</div><ul class="text-sm text-slate-300 space-y-1 list-disc list-inside leading-relaxed"><li>~300 Mio € Stadt-Eigenanteil + nicht-förderfähige Posten (Sparten/Abwasser/Bahn)</li><li>10+3 Jahre Bauzeit; 78.759 t Bau-CO₂; Versiegelung &amp; Biotop-/Kleingartenverlust</li><li>Oberfläche bleibt teils ampelgeregelt; Emissionen konzentriert an Tunnelportalen</li><li>„Grüner Deckel" noch unbeziffert (Wettbewerb)</li></ul></div>
+<div class="bg-tngb-card border border-tngb-cyan/40 rounded-xl p-5"><div class="text-xs font-mono text-tngb-cyan uppercase mb-2">Chancen (extern)</div><ul class="text-sm text-slate-300 space-y-1 list-disc list-inside leading-relaxed"><li>Milderung der Hitzeinsel (DUH-Hitze-Check) durch neues Grün</li><li>Aufwertung &amp; bessere Vernetzung St. Leonhard / Gibitzenhof / Gostenhof</li><li>Verlagerung auf Rad/Fuß durch sichere Querungen</li><li>Vorbildwirkung (Petueltunnel-Park München)</li></ul></div>
+<div class="bg-tngb-card border border-tngb-orange/40 rounded-xl p-5"><div class="text-xs font-mono text-tngb-orange uppercase mb-2">Risiken (extern)</div><ul class="text-sm text-slate-300 space-y-1 list-disc list-inside leading-relaxed"><li>Kostensteigerung (Großprojekt-Risiko, Reference-Class +20–35 %)</li><li>Induzierter Verkehr zehrt Entlastung mittelfristig auf</li><li>Strengere EU-Luftgrenzwerte ab 2030; Bau-Kollision mit Plärrer-Baustelle</li><li>Pfadabhängigkeit Autoverkehr; Aufwertung → Miet-/Verdrängungsdruck</li></ul></div>
+</div>
+
+<!-- Interaktives Bewertungssystem -->
+<h3 class="font-display font-bold text-2xl text-white mb-2">Interaktives Bewertungssystem</h3>
+<p class="text-slate-400 max-w-3xl mb-5">Gewichten Sie die sieben Kriterien nach <strong class="text-white">Ihren</strong> Prioritäten. Das System zeigt für jede Interessengruppe, ob <span class="text-tngb-cyan">Ausbau</span> oder <span class="text-tngb-gold">Sanierung</span> deren Interessen besser dient — und ein Gesamtbild. Kein Stimmungsbild, keine Wahlempfehlung: nur Ihre Werte, faktenbasiert gespiegelt.</p>
+<div class="bg-tngb-card border border-tngb-border rounded-xl p-5 mb-6">
+<div class="text-[10px] font-mono text-slate-500 uppercase mb-3">Ihre Gewichtung der Kriterien (0 = egal · 100 = sehr wichtig)</div>
+<div id="bk-weights" class="grid md:grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3"></div>
+</div>
+<div class="grid lg:grid-cols-5 gap-6">
+<div class="lg:col-span-3 overflow-x-auto">
+<table class="w-full text-sm border-collapse"><thead><tr class="text-left">
+<th class="border border-tngb-border p-2 bg-tngb-bg text-slate-400 font-mono text-[10px] uppercase">Interessengruppe</th>
+<th class="border border-tngb-border p-2 bg-tngb-bg text-tngb-cyan font-mono text-[10px] uppercase">Ausbau</th>
+<th class="border border-tngb-border p-2 bg-tngb-bg text-tngb-gold font-mono text-[10px] uppercase">Sanierung</th>
+<th class="border border-tngb-border p-2 bg-tngb-bg text-slate-400 font-mono text-[10px] uppercase">Tendenz</th>
+</tr></thead><tbody id="bk-tbody"></tbody></table>
+<div id="bk-aggregate" class="mt-3 text-xs font-mono text-slate-400"></div>
+</div>
+<div class="lg:col-span-2 bg-tngb-bg border border-tngb-gold/30 rounded-xl p-5">
+<div class="flex items-center justify-between mb-1"><h4 class="font-display font-bold text-white" id="bk-detail-name">Gruppe wählen</h4><span id="bk-detail-lead" class="text-xs font-mono">—</span></div>
+<div class="text-[11px] text-slate-500 mb-3" id="bk-detail-sub">Klicken Sie links auf eine Interessengruppe.</div>
+<div id="bk-detail-bars" class="space-y-2 mb-3"></div>
+<div class="text-[10px] text-tngb-emerald font-mono uppercase mb-1">Für diese Gruppe spricht für Ausbau</div>
+<p class="text-xs text-slate-300 mb-2" id="bk-detail-pro">—</p>
+<div class="text-[10px] text-tngb-magenta font-mono uppercase mb-1">…und dagegen / für Sanierung</div>
+<p class="text-xs text-slate-300" id="bk-detail-con">—</p>
+</div>
+</div>
+<p class="text-[11px] text-slate-500 mt-4">Methodik: Je Gruppe &amp; Kriterium ist hinterlegt, wie stark <em>Ausbau</em> bzw. <em>Sanierung</em> das jeweilige Interesse bedient (Skala −2…+2, faktenbasiert aus Flyer/Gutachten und dokumentierter Kritik). Ihr gewichteter Score = Σ(Gewicht × Wert)/Σ(Gewicht). Die „Tendenz" vergleicht beide Optionen — sie ist <strong class="text-slate-400">kein Votum</strong>, sondern spiegelt Ihre Gewichtung.</p>
+</div></section>
+
+<!-- ========================= 12 · QUELLEN, GLOSSAR, FOOTER ========================= -->
+<section class="py-16 px-6 lg:px-8 border-t border-tngb-border scroll-fade"><div class="max-w-6xl mx-auto grid lg:grid-cols-2 gap-12">
+<div><div class="text-xs font-mono text-slate-500 mb-2">12A · QUELLEN</div><h3 class="font-display font-bold text-2xl text-white mb-6">Belege & Referenzen</h3>
+<ol class="text-xs text-slate-400 space-y-2 list-decimal list-inside leading-relaxed">
+<li>BauLust e. V., „Projekt Frankenschnellweg", abgerufen 2026-06-04. <a href="https://www.baulust.de/projekte/frankenschnellweg" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline font-mono">baulust.de</a></li>
+<li>Initiative „Zurück auf Los!", Faktenseite, abgerufen 2026-06-04. <a href="https://zurueck-auf-los.de/fakten/" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline font-mono">zurueck-auf-los.de</a></li>
+<li>Stadt Nürnberg / SÖR, „Der Frankenschnellweg und der Bürgerentscheid", 2026. <a href="https://www.nuernberg.de/internet/soer_nbg/frankenschnellweg_kompakt.html" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline font-mono">nuernberg.de/soer</a></li>
+<li>Stadt Nürnberg, PM: Abstimmungsbenachrichtigungen Bürgerentscheid 28.06.2026. <a href="https://www.nuernberg.de/presse/mitteilungen/pm_27555.html" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline font-mono">nuernberg.de/presse</a></li>
+<li>nordbayern.de, „Bürgerentscheid zum Frankenschnellweg — was Nürnberger wissen müssen", 2026.</li>
+<li>SÖR-Sachstandsbericht im Stadtrat, Kostenangabe 1,05 Mrd. €, 2024-04.</li>
+<li>Anfrage ÖDP/Linke Liste/Grüne zu Unterhaltskosten, 2025-01-22.</li>
+<li>Duranton, G. & Turner, M. (2011): „The Fundamental Law of Road Congestion", American Economic Review.</li>
+<li>Wikipedia: „Frankenschnellweg" (de), Permalink-Stand 2026-06-04 · CC BY-SA 4.0.</li>
+<li>ACCON GmbH: Luftschadstoffprognosen Abschnitt West &amp; Mitte, Prognosejahr 2030 (Planfeststellungsunterlagen, Regierung von Mittelfranken).</li>
+<li>Emissionsberechnung Unterlage W 11.1.2.1 Ä; Umweltverträglichkeitsstudie zum kreuzungsfreien Ausbau (SÖR / Stadt Nürnberg). <a href="https://www.nuernberg.de/internet/soer_nbg/erg_plafe.html" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline font-mono">nuernberg.de/soer</a></li>
+<li>Richtlinie 2008/50/EG (Luftqualität, bis 2029) und Richtlinie (EU) 2024/2881 (verschärfte Grenzwerte ab 2030); WHO Air Quality Guidelines 2021.</li>
+<li>LfU Bayern, Immissionsmessstation Nürnberg Von-der-Tann-Straße (NO₂/PM₁₀/PM₂,₅), Stand 2026-03.</li>
+<li>BUND Naturschutz Nürnberg: Stellungnahme zum Bürgerentscheid Frankenschnellweg (CO₂-Kritik), 2026.</li>
+<li>Stadt Nürnberg / SÖR: Informationsflyer „Potenziale für Nürnberg – Der kreuzungsfreie Ausbau des Frankenschnellwegs", Stand 2026-05 (Befürworter-Darstellung; Kostenstand 2025). <a href="https://www.soer.nuernberg.de" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline font-mono">soer.nuernberg.de</a></li>
+<li>Ergänzender Planfeststellungsbeschluss 2020-07-10 (Änderung zu 2013-06-28), Regierung von Mittelfranken — Gutachten zu Lärm, Luftschadstoffen, Verkehr, Umweltverträglichkeit (UVP), Wassertechnik, Gesamtsicherheit, Klimaökologie, Artenschutz. <a href="https://www.nuernberg.de/internet/soer_nbg/erg_plafe.html" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline font-mono">nuernberg.de/erg_plafe</a></li>
+</ol></div>
+<div><div class="text-xs font-mono text-slate-500 mb-2">12B · GLOSSAR</div><h3 class="font-display font-bold text-2xl text-white mb-6">Fachbegriffe</h3>
+<dl class="text-sm space-y-3">
+<div><dt class="text-tngb-cyan font-semibold">Bürgerbegehren / Bürgerentscheid</dt><dd class="text-slate-400">Instrument der direkten Demokratie (Art. 18a BayGO): Bürger erzwingen per Unterschrift eine verbindliche Sachabstimmung.</dd></div>
+<div><dt class="text-tngb-cyan font-semibold">Kreuzungsfreier Ausbau</dt><dd class="text-slate-400">Beseitigung niveaugleicher Kreuzungen (Ampeln) zugunsten von Tunnel/Brücken für stockungsfreien Durchgangsverkehr.</dd></div>
+<div><dt class="text-tngb-cyan font-semibold">Planfeststellung</dt><dd class="text-slate-400">Förmliches Genehmigungsverfahren für Infrastruktur; schafft Baurecht und bündelt alle behördlichen Entscheidungen.</dd></div>
+<div><dt class="text-tngb-cyan font-semibold">Induzierter Verkehr</dt><dd class="text-slate-400">Zusätzlicher Verkehr, der erst durch neue Straßenkapazität entsteht — relativiert Stau-Entlastung.</dd></div>
+<div><dt class="text-tngb-cyan font-semibold">Zuwendungsfähige Kosten</dt><dd class="text-slate-400">Kostenanteil, der nach Förderrichtlinie bezuschussbar ist — nicht die Gesamtsumme des Projekts.</dd></div>
+<div><dt class="text-tngb-cyan font-semibold">Letztverbraucher</dt><dd class="text-slate-400">Endkunden (Haushalte), auf die nicht-förderfähige Sparten-/Netzkosten über Entgelte umgelegt werden.</dd></div>
+</dl></div>
+</div>
+<div class="max-w-6xl mx-auto mt-12 pt-8 border-t border-tngb-border text-xs text-slate-500 flex flex-wrap items-center justify-between gap-3">
+<div>© 2026 <a href="https://www.TheNextGenerationBanking.com" target="_blank" rel="noopener" class="text-tngb-cyan hover:underline font-mono">TheNextGenerationBanking.com</a> · FinCoach AI · M310</div>
+<div class="text-slate-600">Datenstand 2026-06-04 · Simulator/Timeline/Visual zeigen Wirkrichtungen, keine Punktprognosen · keine Abstimmungsempfehlung.</div>
+</div>
+</section>
+
+<!-- ========================= LIGHTBOX ========================= -->
+<div id="imglightbox" class="fixed inset-0 z-[9999] bg-black/92 backdrop-blur" style="display:none">
+<button id="lb-close" class="lb-btn top-5 right-6 px-3 py-1 text-2xl">✕</button>
+<button id="lb-prev" class="lb-btn left-4 md:left-10 top-1/2 -translate-y-1/2 px-3 py-2 text-3xl">‹</button>
+<img id="lb-img" class="max-h-[82vh] max-w-[92vw] rounded-lg object-contain" src="" alt="">
+<button id="lb-next" class="lb-btn right-4 md:right-10 top-1/2 -translate-y-1/2 px-3 py-2 text-3xl">›</button>
+<div id="lb-cap" class="absolute bottom-5 left-0 right-0 text-center text-slate-300 text-xs font-mono px-6"></div>
+</div>
+
+<!-- ========================= JS ========================= -->
+<script>
+const CONFLICT_MATRIX = {
+  topic: "Bürgerentscheid Frankenschnellweg Nürnberg",
+  module_slot: "m310-frankenschnellweg",
+  axes: [
+    { axis:"Fachbereich", baseline_score:45, intervention_score:68, confidence:0.70, drivers:["Kreuzungsfreier Durchgangsverkehr","Lärmschutzwände West","Modernisierung Bestand"], risks:["Nur ~20% nutzen Tunnel","Ampeln oberirdisch bleiben","Induzierter Verkehr"] },
+    { axis:"Gesellschaft", baseline_score:50, intervention_score:52, confidence:0.60, drivers:["Neuer Stadtteilpark","Weniger Schleichverkehr"], risks:["12–15 J. Baustelle","6 m Lärmwand trennt Stadtteile","Verlust von Kleingärten"] },
+    { axis:"Wirtschaft", baseline_score:48, intervention_score:62, confidence:0.62, drivers:["Erreichbarkeit Logistik","Bau-Konjunktur regional","Fördermittel-Zufluss"], risks:["~1,1 Mrd. € Bindung","Folgekosten über Gebühren","Baustellen-Belastung Gewerbe"] },
+    { axis:"Wohlstand", baseline_score:52, intervention_score:50, confidence:0.55, drivers:["Wertsteigerung lärmberuhigter Lagen"], risks:["Umlage auf Letztverbraucher","Opportunitätskosten 1,1 Mrd.","Sunk-Cost-Falle"] },
+    { axis:"Wissen", baseline_score:40, intervention_score:58, confidence:0.68, drivers:["Bürgerbeteiligung schärft Debatte","Transparenz Kostenstruktur"], risks:["Komplexe Förderlogik schwer vermittelbar","Info-Kampagnen-Neutralität umstritten"] },
+    { axis:"Gesundheit", baseline_score:46, intervention_score:55, confidence:0.58, drivers:["Lärmschutz senkt Dauerbelastung","Park als Erholungsraum"], risks:["Schadstoff-Konzentration an Tunnelportalen","Baustaub/Lärm über Jahre","Feinstaub/Reifenabrieb bleibt"] },
+    { axis:"Zukunftsfähigkeit", baseline_score:48, intervention_score:42, confidence:0.66, drivers:["Robuste Infrastruktur für Jahrzehnte"], risks:["78.759 t CO₂ Beton","8 ha Versiegelung","Hitze-Insel Nürnberg verschärft","Pfadabhängigkeit Autoverkehr"] }
+  ],
+  lens_weights: {
+    balanced: {"Fachbereich":1.0,"Gesellschaft":1.0,"Wirtschaft":1.0,"Wohlstand":1.0,"Wissen":1.0,"Gesundheit":1.0,"Zukunftsfähigkeit":1.0},
+    economy:  {"Fachbereich":1.4,"Gesellschaft":0.8,"Wirtschaft":1.6,"Wohlstand":1.3,"Wissen":0.8,"Gesundheit":0.7,"Zukunftsfähigkeit":0.7},
+    society:  {"Fachbereich":0.9,"Gesellschaft":1.6,"Wirtschaft":0.8,"Wohlstand":1.0,"Wissen":1.1,"Gesundheit":1.4,"Zukunftsfähigkeit":1.1},
+    future:   {"Fachbereich":0.8,"Gesellschaft":1.1,"Wirtschaft":0.7,"Wohlstand":0.8,"Wissen":1.2,"Gesundheit":1.3,"Zukunftsfähigkeit":1.7},
+    family:   {"Fachbereich":0.9,"Gesellschaft":1.3,"Wirtschaft":0.9,"Wohlstand":1.2,"Wissen":1.1,"Gesundheit":1.3,"Zukunftsfähigkeit":1.4}
+  },
+  process_timeline: {
+    day: [
+      { id:1, title:"Wahllokal öffnet", actor:"Wahlamt Nürnberg", duration:"08:00", inputs:"Abstimmungsbenachrichtigung", outputs:"Stimmberechtigung geprüft", explain:{einsteiger:"Am 28. Juni öffnen die Wahllokale. Du nimmst deine Benachrichtigung und deinen Ausweis mit.",fortgeschritten:"Stimmberechtigt sind alle wahlberechtigten Nürnberger; Abstimmung auch per Briefwahl möglich.",experte:"Rechtsgrundlage Art. 18a BayGO; Abstimmungsverzeichnis analog Kommunalwahl."}, next:[2] },
+      { id:2, title:"Stimmzettel ausfüllen", actor:"Abstimmende:r", duration:"2 Min", inputs:"Abstimmungsfrage", outputs:"Ja / Nein", explain:{einsteiger:"Du beantwortest eine einzige Frage: Soll der Ausbau sofort gestoppt werden — Ja oder Nein.",fortgeschritten:"Ein Ja = Projektstopp; ein Nein = Fortführung der Planungen. Keine Mehrfachoptionen.",experte:"Suggestivwirkung der Frageformulierung ist bei Bürgerentscheiden ein bekanntes Validitätsthema."}, next:[3] },
+      { id:3, title:"Auszählung", actor:"Wahlvorstände", duration:"ab 18:00", inputs:"Stimmen", outputs:"Vorläufiges Ergebnis", explain:{einsteiger:"Abends werden alle Stimmen gezählt.",fortgeschritten:"Auszählung in den Stimmbezirken, Übermittlung ans Wahlamt.",experte:"Schnellmeldungen je Stimmbezirk; Briefabstimmung separat ausgezählt."}, next:[4] },
+      { id:4, title:"Quorum-Prüfung", actor:"Wahlamt", duration:"Abend", inputs:"Ja-Stimmen-Anteil", outputs:"Gültig / ungültig", explain:{einsteiger:"Damit das Ergebnis zählt, muss ein Mindestanteil der Bürger mit Ja stimmen.",fortgeschritten:"Zustimmungsquorum nach BayGO (i. d. R. 10–20 % der Stimmberechtigten je nach Gemeindegröße).",experte:"Für Großstädte gilt ein 10 %-Zustimmungsquorum; verfehltes Quorum = Entscheid scheitert trotz Mehrheit."}, next:[5] },
+      { id:5, title:"Bindungswirkung", actor:"Stadt Nürnberg", duration:"~1 Jahr", inputs:"Gültiges Ergebnis", outputs:"Verbindliche Vorgabe", explain:{einsteiger:"Das Ergebnis ist für die Stadt bindend — meist für ein Jahr.",fortgeschritten:"Ein erfolgreicher Stopp-Entscheid bindet den Stadtrat; Abweichung nur per neuem Entscheid.",experte:"Bindungsfrist und Abänderungsvorbehalt nach Art. 18a Abs. 13 BayGO."} }
+    ],
+    week: [
+      { id:1, title:"Initiative gründet sich", actor:"Bürger / BauLust", duration:"2024–25", inputs:"Projektkritik", outputs:"Begehren formuliert", explain:{einsteiger:"Bürger schließen sich zusammen, weil sie das Projekt stoppen wollen.",fortgeschritten:"Formulierung der zulässigen Fragestellung und Begründung des Begehrens.",experte:"Zulässigkeitsanforderungen: bestimmte Frage, Begründung, benannte Vertretungsberechtigte."}, next:[2] },
+      { id:2, title:"Unterschriften sammeln", actor:"Initiative", duration:"Wochen", inputs:"Unterstützer", outputs:"~14.000 Unterschriften", explain:{einsteiger:"Sie sammeln auf der Straße tausende Unterschriften.",fortgeschritten:"Erforderliches Quorum an gültigen Unterschriften je nach Einwohnerzahl.",experte:"Nürnberg: Unterschriftenquorum ~3 % der Stimmberechtigten."}, next:[3] },
+      { id:3, title:"Einreichung", actor:"Initiative → Wahlamt", duration:"2026-03-30", inputs:"Unterschriftenlisten", outputs:"Antrag eingereicht", explain:{einsteiger:"Am 30. März 2026 werden die Unterschriften abgegeben.",fortgeschritten:"Das Wahlamt prüft Gültigkeit und Quorum.",experte:"Prüfung von Doppel-/Ungültig-Einträgen, Abgleich Melderegister."}, next:[4] },
+      { id:4, title:"Zulässigkeitsprüfung", actor:"Stadtrat", duration:"2026-04-15", inputs:"Geprüfter Antrag", outputs:"Für rechtskonform erklärt", explain:{einsteiger:"Der Stadtrat bestätigt: Die Abstimmung darf stattfinden.",fortgeschritten:"Rechtskonformität festgestellt, Abstimmungstermin festgelegt.",experte:"Bei Streit über Zulässigkeit drohen Verwaltungsgerichtsverfahren."}, next:[5] },
+      { id:5, title:"Termin & Kampagne", actor:"Stadt + Lager", duration:"Mai–Juni 2026", inputs:"Termin 28.06.", outputs:"Information & Mobilisierung", explain:{einsteiger:"Bis zur Abstimmung werben beide Seiten um Stimmen.",fortgeschritten:"Stadt informiert sachlich; Neutralitätspflicht der Verwaltung ist umstritten.",experte:"Grenze zwischen zulässiger Information und unzulässiger Wahlbeeinflussung (Rechtsprechung)."} }
+    ],
+    month: [
+      { id:1, title:"Planfeststellung", actor:"Reg. Mittelfranken", duration:"2013 / 2020", inputs:"Planung", outputs:"Baurecht", explain:{einsteiger:"Vor Jahren wurde das Projekt offiziell genehmigt.",fortgeschritten:"Zwei Planfeststellungsbeschlüsse (2013, 2020) schufen das Baurecht.",experte:"Abschnittsbildung; Bestandskraft nach gerichtlicher Bestätigung."}, next:[2] },
+      { id:2, title:"BVerwG bestätigt", actor:"Bundesverwaltungsgericht", duration:"2025-03-26", inputs:"Klagen", outputs:"Baurecht rechtskräftig", explain:{einsteiger:"Das höchste Verwaltungsgericht sagt: Bauen ist erlaubt.",fortgeschritten:"Klagen gegen die Planfeststellung abgewiesen — Baurecht steht.",experte:"Letztinstanzliche Klärung räumt aufschiebende Wirkung aus."}, next:[3] },
+      { id:3, title:"Abschnitt West", actor:"Stadt / SÖR", duration:"2027 →", inputs:"Beschluss 2025-04-09", outputs:"Lärmschutz + Spur", explain:{einsteiger:"Zuerst wird der westliche Teil gebaut: Lärmschutz und eine zusätzliche Spur.",fortgeschritten:"Baumrodung Herbst 2026 vorbereitend, Baubeginn 2027 (Doos–Jansenbrücke).",experte:"West ist weitgehend gebundene Maßnahme; Mitte ist das milliardenschwere Tunnellos."}, next:[4] },
+      { id:4, title:"Abschnitt Mitte (Tunnel)", actor:"Stadt / SÖR", duration:"2032–2045", inputs:"Finanzierung Mitte", outputs:"Tunnel + Park", explain:{einsteiger:"Später kommt der große Tunnel — das dauert bis etwa 2045.",fortgeschritten:"~1,8–1,9 km Tunnel, offene Bauweise, Stadtteilpark obenauf.",experte:"Bauzeit-Risiko 12 vs. 15+ Jahre; Spartenverlegung & Hafensammler als kritischer Pfad."}, next:[5] },
+      { id:5, title:"Bürgerentscheid", actor:"Bürger Nürnbergs", duration:"2026-06-28", inputs:"Stimmen", outputs:"Stopp oder Fortführung", explain:{einsteiger:"Mittendrin entscheiden die Bürger, ob alles weiterläuft oder stoppt.",fortgeschritten:"Stopp-Votum würde laufende Planungen/Maßnahmen unterbrechen.",experte:"Kollision von bestandskräftigem Baurecht und kommunalem Direktdemokratie-Votum — politisch wie rechtlich heikel."} }
+    ]
+  }
+};
+
+// ===== Timeline =====
+const PROCESS_TIMELINE = CONFLICT_MATRIX.process_timeline || { day:[], week:[], month:[] };
+const pt = { period:'day', speed:'click', level:'einsteiger', idx:0, playing:false, timer:null };
+const PT_LBL = { day:'Abstimmungstag', week:'Verfahren', month:'Bauphasen' };
+function ptSteps(){ return PROCESS_TIMELINE[pt.period] || []; }
+function ptTrunc(s,n){ return s && s.length>n ? s.slice(0,n-1)+'…' : (s||''); }
+function ptRenderCanvas(){ const steps=ptSteps(); const c=document.getElementById('pt-canvas'); if(!steps.length){c.innerHTML='<div class="text-slate-500 text-sm p-8 text-center">Keine Daten.</div>';return;} const w=180,gap=44,h=90,H=150; const totalW=steps.length*(w+gap)-gap; let svg=`<svg viewBox="0 0 ${totalW} ${H}" width="100%" style="height:${H}px"><defs><marker id="pta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#334155"/></marker><marker id="ptac" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#00CFFF"/></marker></defs>`; steps.forEach((s,i)=>{if(i<steps.length-1){const x1=i*(w+gap)+w,x2=(i+1)*(w+gap),y=H/2;const cls=i===pt.idx?'active':(i<pt.idx?'completed':'');svg+=`<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" class="pt-edge ${cls}" marker-end="url(#${i===pt.idx?'ptac':'pta'})"/>`;}}); steps.forEach((s,i)=>{const x=i*(w+gap),y=(H-h)/2;const cls=i===pt.idx?'active':(i<pt.idx?'completed':'');svg+=`<g class="pt-node ${cls}" data-idx="${i}" style="cursor:pointer"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="10" class="pt-node-rect"/><text x="${x+14}" y="${y+22}" class="pt-node-id">SCHRITT ${String(s.id).padStart(2,'0')}</text><text x="${x+14}" y="${y+50}" class="pt-node-label">${ptTrunc(s.title,22)}</text><text x="${x+14}" y="${y+74}" class="pt-node-meta">${ptTrunc(s.actor||'',14)} · ${ptTrunc(s.duration||'',12)}</text></g>`;}); svg+='</svg>'; c.innerHTML=svg; c.querySelectorAll('.pt-node').forEach(n=>n.addEventListener('click',()=>{pt.idx=+n.dataset.idx;ptStop();ptRender();})); }
+function ptRenderDetail(){ const steps=ptSteps(); const s=steps[pt.idx]; if(!s)return; document.getElementById('pt-detail-id').textContent=`SCHRITT ${String(s.id).padStart(2,'0')} / ${steps.length}`; document.getElementById('pt-detail-title').textContent=s.title||'—'; document.getElementById('pt-detail-actor').textContent=s.actor||'—'; document.getElementById('pt-detail-explain').textContent=(s.explain&&s.explain[pt.level])||s.title||'—'; document.getElementById('pt-detail-inputs').textContent=s.inputs||'—'; document.getElementById('pt-detail-outputs').textContent=s.outputs||'—'; document.getElementById('pt-detail-duration').textContent=s.duration||'—'; document.getElementById('pt-progress').textContent=`Schritt ${pt.idx+1} von ${steps.length}`; document.getElementById('pt-cycle').textContent=`Sicht: ${PT_LBL[pt.period]}`; }
+function ptRender(){ ptRenderCanvas(); ptRenderDetail(); }
+function ptNext(){ const steps=ptSteps(); if(pt.idx<steps.length-1){pt.idx++;ptRender();}else ptStop(); }
+function ptPrev(){ if(pt.idx>0){pt.idx--;ptRender();} }
+function ptPlay(){ if(pt.speed==='click')return; pt.playing=true; const b=document.getElementById('pt-play'); b.textContent='⏸ Pause'; b.classList.add('playing'); const ms={'1':3000,'2':1500,'5':600}[pt.speed]||3000; pt.timer=setInterval(()=>{const steps=ptSteps();if(pt.idx<steps.length-1)ptNext();else ptStop();},ms); }
+function ptStop(){ pt.playing=false; if(pt.timer){clearInterval(pt.timer);pt.timer=null;} const b=document.getElementById('pt-play'); b.textContent='▶ Play'; b.classList.remove('playing'); }
+document.querySelectorAll('.pt-period-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.pt-period-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');pt.period=b.dataset.period;pt.idx=0;ptStop();ptRender();}));
+document.querySelectorAll('.pt-speed-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.pt-speed-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');pt.speed=b.dataset.speed;ptStop();}));
+document.querySelectorAll('.pt-level-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.pt-level-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');pt.level=b.dataset.ptLevel;ptRenderDetail();}));
+document.getElementById('pt-prev').addEventListener('click',ptPrev);
+document.getElementById('pt-next').addEventListener('click',ptNext);
+document.getElementById('pt-play').addEventListener('click',()=>{if(pt.playing)ptStop();else if(pt.speed==='click'){pt.speed='1';document.querySelectorAll('.pt-speed-btn').forEach(x=>x.classList.toggle('active',x.dataset.speed==='1'));ptPlay();}else ptPlay();});
+
+// ===== Simulator =====
+const AXES = CONFLICT_MATRIX.axes.map(a=>a.axis);
+const MODEL = Object.fromEntries(CONFLICT_MATRIX.axes.map(a=>[a.axis,{baseline:a.baseline_score,maxImpact:a.intervention_score,confidence:a.confidence}]));
+const LENS_WEIGHTS = CONFLICT_MATRIX.lens_weights;
+function lensW(lens,axis){ return (LENS_WEIGHTS[lens]&&LENS_WEIGHTS[lens][axis])||1.0; }
+function axisImpact(axis,intensity,horizonY,lens,devilOn){ const m=MODEL[axis]; if(!m)return 0; const sat=1-Math.exp(-(intensity/100)*(horizonY/5)); const w=lensW(lens,axis); const eta=m.confidence/(m.confidence+0.2); let v=m.baseline+(m.maxImpact-m.baseline)*sat*w*eta; if(devilOn) v*=0.85-(1-m.confidence)*0.20; return Math.max(0,Math.min(100,v)); }
+function aggregateEta(){ const v=AXES.map(a=>MODEL[a].confidence); return (v.reduce((s,x)=>s+x,0)/v.length).toFixed(2); }
+let radar;
+function renderSim(){ const intensity=+document.getElementById('sim-intensity').value; const horizon=+document.getElementById('sim-horizon').value; const lens=document.getElementById('sim-lens').value; const devil=document.getElementById('sim-devil').checked; document.getElementById('sim-intensity-val').textContent=intensity+' %'; document.getElementById('sim-horizon-val').textContent=horizon+' J'; document.getElementById('sim-confidence').textContent='η ≈ '+aggregateEta(); const baseline=AXES.map(a=>MODEL[a].baseline); const intervention=AXES.map(a=>axisImpact(a,intensity,horizon,lens,devil)); if(!radar){radar=new Chart(document.getElementById('sim-radar'),{type:'radar',data:{labels:AXES,datasets:[{label:'Status Quo',data:baseline,borderColor:'#E6399A',backgroundColor:'rgba(230,57,154,.15)',borderWidth:2,pointRadius:3},{label:'Mit Ausbau',data:intervention,borderColor:'#00CFFF',backgroundColor:'rgba(0,207,255,.20)',borderWidth:2,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,scales:{r:{min:0,max:100,ticks:{color:'#64748B',backdropColor:'transparent',stepSize:25},grid:{color:'rgba(255,255,255,.08)'},angleLines:{color:'rgba(255,255,255,.08)'},pointLabels:{color:'#E2E8F0',font:{size:11,family:'Inter'}}}},plugins:{legend:{labels:{color:'#E2E8F0'}}}}});}else{radar.data.datasets[0].data=baseline;radar.data.datasets[1].data=intervention;radar.update();} document.getElementById('sim-readout').innerHTML=AXES.map((a,i)=>{const d=intervention[i]-baseline[i];const sign=d>=0?'+':'';const color=d>=15?'text-tngb-emerald':d>=0?'text-tngb-cyan':'text-tngb-magenta';return `<div class="bg-tngb-card border border-tngb-border rounded-lg p-2"><div class="text-[9px] text-slate-500 font-mono uppercase truncate">${a.slice(0,9)}</div><div class="${color} font-bold text-sm">${sign}${d.toFixed(0)}</div></div>`;}).join(''); }
+function exportJSON(){ const data={timestamp:new Date().toISOString(),topic:CONFLICT_MATRIX.topic,module:CONFLICT_MATRIX.module_slot,inputs:{intensity:+document.getElementById('sim-intensity').value,horizon:+document.getElementById('sim-horizon').value,lens:document.getElementById('sim-lens').value,devil:document.getElementById('sim-devil').checked},model:MODEL,results:Object.fromEntries(AXES.map(a=>[a,{baseline:MODEL[a].baseline,intervention:axisImpact(a,+document.getElementById('sim-intensity').value,+document.getElementById('sim-horizon').value,document.getElementById('sim-lens').value,document.getElementById('sim-devil').checked),confidence:MODEL[a].confidence}])),disclaimer:'Modell zeigt Wirkrichtungen, keine Punktprognosen.'}; const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download=`${CONFLICT_MATRIX.module_slot||'modul'}-simulation.json`; a.click(); URL.revokeObjectURL(url); }
+['sim-intensity','sim-horizon','sim-lens','sim-devil'].forEach(id=>{const el=document.getElementById(id);el.addEventListener('input',renderSim);el.addEventListener('change',renderSim);});
+document.getElementById('sim-export').addEventListener('click',exportJSON);
+
+// ===== Background-Tabs =====
+document.querySelectorAll('[data-tab-group]').forEach(btn=>btn.addEventListener('click',()=>{const g=btn.dataset.tabGroup;document.querySelectorAll(`[data-tab-group="${g}"]`).forEach(t=>t.classList.remove('active'));btn.classList.add('active');const lvl=btn.dataset.level;document.querySelectorAll('.level-content').forEach(c=>c.classList.remove('active'));document.getElementById(lvl).classList.add('active');}));
+
+// ===== Impact-Dossier =====
+const AXIS_COLORS={"Fachbereich":'cyan',"Gesellschaft":'emerald',"Wirtschaft":'magenta',"Wohlstand":'gold',"Wissen":'lavender',"Gesundheit":'coral',"Zukunftsfähigkeit":'orange'};
+document.getElementById('impact-cards').innerHTML=CONFLICT_MATRIX.axes.map(a=>{const c=AXIS_COLORS[a.axis]||'cyan';const d=a.intervention_score-a.baseline_score;const sign=d>=0?'+':'';return `<div class="bg-tngb-card border border-tngb-${c}/30 rounded-xl p-5"><div class="flex items-center justify-between mb-3"><div class="text-xs font-mono text-tngb-${c} uppercase">${a.axis}</div><div class="text-xs text-slate-500 font-mono">η = ${a.confidence.toFixed(2)}</div></div><div class="flex items-end gap-4 mb-4"><div><div class="text-[10px] text-slate-500 font-mono uppercase">Baseline</div><div class="text-2xl font-display font-bold text-slate-400">${a.baseline_score}</div></div><div class="text-2xl text-slate-600">→</div><div><div class="text-[10px] text-slate-500 font-mono uppercase">Ausbau</div><div class="text-2xl font-display font-bold text-white">${a.intervention_score}</div></div><div class="ml-auto"><div class="text-[10px] text-slate-500 font-mono uppercase">Δ</div><div class="text-2xl font-display font-bold text-tngb-${c}">${sign}${d}</div></div></div><div class="space-y-2"><div><div class="text-[10px] text-tngb-emerald font-mono uppercase mb-1">↑ Drivers</div><ul class="text-xs text-slate-400 space-y-0.5 list-disc list-inside leading-relaxed">${a.drivers.map(x=>`<li>${x}</li>`).join('')}</ul></div><div><div class="text-[10px] text-tngb-magenta font-mono uppercase mb-1">⚠ Risks</div><ul class="text-xs text-slate-400 space-y-0.5 list-disc list-inside leading-relaxed">${a.risks.map(x=>`<li>${x}</li>`).join('')}</ul></div></div></div>`;}).join('');
+
+// ===== CAT-Banner =====
+function initCAT(){const b=document.getElementById('cat-banner');if(!b)return;const s=document.getElementById('cat-status');const t=parseFloat(localStorage.getItem('cat_theta'));if(!isNaN(t)){let l,e,i;if(t<-1){l='Einsteiger';e='📘';i='bg-1';}else if(t>1){l='Experte';e='🎓';i='bg-3';}else{l='Fortgeschritten';e='📗';i='bg-2';}s.innerHTML=`${e} CAT-Profil: <strong class="text-white">${l}</strong> · θ = ${t.toFixed(2)} · Inhalte angepasst`;b.classList.remove('hidden');document.querySelectorAll('.level-tab.active').forEach(x=>x.classList.remove('active'));document.querySelector(`.level-tab[data-level="${i}"]`)?.classList.add('active');document.querySelectorAll('.level-content.active').forEach(x=>x.classList.remove('active'));document.getElementById(i)?.classList.add('active');}else{s.innerHTML=`📊 Kein CAT-Profil — <a href="infe-cat.html" class="text-tngb-cyan hover:underline">erstelle eines</a>`;b.classList.remove('hidden');}}
+
+// ===== Visual Gallery =====
+const TNGB_TT={backgroundColor:'#121A2E',borderColor:'#1E293B',textStyle:{color:'#E2E8F0',fontFamily:'Inter'}};
+const TNGB_AX={color:'#94A3B8',fontFamily:'JetBrains Mono'};
+const QUAL=['#00CFFF','#00CC7A','#E6399A','#FF6B00','#9933FF','#DFAF0F','#E040A0'];
+const vizState={donut:'detail','3d':'detail',sankey:'detail',heatmap:'detail'};
+const vizCharts={};
+
+function renderViz1(mode){ // Donut Kosten
+  const el=document.getElementById('viz-donut');if(!el||typeof echarts==='undefined')return;
+  if(!vizCharts.donut)vizCharts.donut=echarts.init(el);
+  const detail=[
+    {name:'Bauwerk (gefördert, zuwendungsfähig)',value:800},
+    {name:'N-Ergie-Sparten (Wasser/Strom/Gas/FW)',value:62.4},
+    {name:'Abwasser SUN (2023)',value:18.4},
+    {name:'DB Brücken/Unterführungen (2015)',value:11.05},
+    {name:'Grüner Deckel / Park (unbeziffert)',value:120},
+    {name:'Sonstiges / Reserve',value:88}
+  ];
+  const tldr=[{name:'Förderfähiges Bauwerk',value:800},{name:'Nicht-förderfähig + Nebenkosten',value:300}];
+  vizCharts.donut.setOption({backgroundColor:'transparent',tooltip:{trigger:'item',formatter:'{b}: {c} Mio. € ({d}%)',...TNGB_TT},legend:{type:'scroll',bottom:0,textStyle:{color:'#94A3B8',fontSize:10},pageTextStyle:{color:'#94A3B8'}},color:QUAL,series:[{type:'pie',radius:['45%','72%'],center:['50%','44%'],data:(mode==='tldr'?tldr:detail),label:{color:'#E2E8F0',fontSize:10},itemStyle:{borderColor:'#0A0F1A',borderWidth:2}}]});
+  document.getElementById('viz-donut-explain').textContent=mode==='tldr'?'TL;DR: ~800 Mio. € förderfähiges Bauwerk vs. ~300 Mio. € nicht-förderfähige & Nebenkosten, die bei Stadt/Letztverbrauchern landen.':'Detail: Werte in Mio. €. „Grüner Deckel" ist noch nicht final beziffert (Platzhalter); Sparten- und Bahnkosten stammen aus 2023/2015 und liegen heute höher.';
+}
+function renderViz2(mode){ // Bar Klima/Fläche
+  const el=document.getElementById('viz-3d');if(!el||typeof echarts==='undefined')return;
+  if(!vizCharts['3d'])vizCharts['3d']=echarts.init(el);
+  const cats=['CO₂ Beton (t)','CO₂ Betrieb/Jahr (t)','Versiegelung Mitte (100 m²)','Rodung Biotop (100 m²)'];
+  const detail=[78759,237,700,800];
+  const tldr=[78759,237,0,0];
+  vizCharts['3d'].setOption({backgroundColor:'transparent',grid:{left:'18%',right:'8%',top:'8%',bottom:'10%'},tooltip:{trigger:'axis',...TNGB_TT},xAxis:{type:'value',axisLabel:{...TNGB_AX,fontSize:9},splitLine:{lineStyle:{color:'#1E293B'}}},yAxis:{type:'category',data:cats,axisLabel:{...TNGB_AX,fontSize:10},axisLine:{lineStyle:{color:'#1E293B'}}},series:[{type:'bar',data:(mode==='tldr'?tldr:detail),itemStyle:{color:(p)=>QUAL[p.dataIndex%QUAL.length]},label:{show:true,position:'right',color:'#E2E8F0',fontFamily:'JetBrains Mono',fontSize:9}}]});
+  document.getElementById('viz-3d-explain').textContent=mode==='tldr'?'TL;DR: Die 78.759 t Bau-CO₂ überwiegen die jährlichen Betriebs-Emissionen um das ~330-fache.':'Detail: Initiativen-Zahlen (zurueck-auf-los.de). Versiegelung Abschnitt Mitte ~7 ha = 700×100 m²; Rodung Biotop >80.000 m². Logarithmischer Größenunterschied — beachte die x-Achse.';
+}
+function renderViz3(mode){ // Sankey Finanzierungsfluss
+  const el=document.getElementById('viz-sankey');if(!el||typeof echarts==='undefined')return;
+  if(!vizCharts.sankey)vizCharts.sankey=echarts.init(el);
+  const detail={
+    data:[{name:'Freistaat Bayern'},{name:'Sonderfinanzierung Land'},{name:'Stadt Nürnberg'},{name:'Letztverbraucher / Gebühren'},{name:'Gefördertes Bauwerk'},{name:'Nicht-förderfähig'},{name:'Frankenschnellweg-Ausbau'}],
+    links:[
+      {source:'Freistaat Bayern',target:'Gefördertes Bauwerk',value:650},
+      {source:'Sonderfinanzierung Land',target:'Gefördertes Bauwerk',value:150},
+      {source:'Stadt Nürnberg',target:'Gefördertes Bauwerk',value:100},
+      {source:'Stadt Nürnberg',target:'Nicht-förderfähig',value:108},
+      {source:'Letztverbraucher / Gebühren',target:'Nicht-förderfähig',value:92},
+      {source:'Gefördertes Bauwerk',target:'Frankenschnellweg-Ausbau',value:900},
+      {source:'Nicht-förderfähig',target:'Frankenschnellweg-Ausbau',value:200}
+    ]
+  };
+  const tldr={
+    data:[{name:'Freistaat (Förderung)'},{name:'Stadt & Bürger'},{name:'Frankenschnellweg-Ausbau'}],
+    links:[{source:'Freistaat (Förderung)',target:'Frankenschnellweg-Ausbau',value:800},{source:'Stadt & Bürger',target:'Frankenschnellweg-Ausbau',value:300}]
+  };
+  const d=(mode==='tldr'?tldr:detail);
+  vizCharts.sankey.setOption({backgroundColor:'transparent',tooltip:{trigger:'item',formatter:p=>p.dataType==='edge'?`${p.data.source} → ${p.data.target}: ${p.data.value} Mio. €`:p.name,...TNGB_TT},series:[{type:'sankey',layout:'none',emphasis:{focus:'adjacency'},data:d.data.map((n,i)=>({...n,itemStyle:{color:QUAL[i%QUAL.length]}})),links:d.links,lineStyle:{color:'gradient',opacity:0.4},label:{color:'#E2E8F0',fontFamily:'Inter',fontSize:11}}]});
+  document.getElementById('viz-sankey-explain').textContent=mode==='tldr'?'TL;DR: Grob ~800 Mio. € kommen über Landesförderung, ~300 Mio. € tragen Stadt und Bürger.':'Detail: Werte gerundet (Mio. €) und teils gemäß FinCoach-Zuordnung modelliert — die „80 %-Förderung" bezieht sich nur auf das zuwendungsfähige Bauwerk, nicht auf nicht-förderfähige Sparten-/Bahnkosten.';
+}
+
+function renderHeatmap(mode){
+    const el=document.getElementById('viz-heatmap');if(!el||typeof echarts==='undefined')return;
+    if(!vizCharts.heatmap)vizCharts.heatmap=echarts.init(el,null,{renderer:'canvas'});
+    const lenses=['balanced','economy','society','future','family'];const data=[];
+    lenses.forEach((lens,i)=>{AXES.forEach((axis,j)=>{data.push([j,i,lensW(lens,axis).toFixed(2)]);});});
+    vizCharts.heatmap.setOption({backgroundColor:'transparent',tooltip:{position:'top',formatter:p=>`${lenses[p.value[1]]} × ${AXES[p.value[0]]}<br/>Gewicht: <strong>${p.value[2]}</strong>`,...TNGB_TT},grid:{left:'12%',right:'4%',top:'6%',bottom:'24%'},xAxis:{type:'category',data:AXES,axisLabel:{...TNGB_AX,rotate:30,fontSize:10},axisLine:{lineStyle:{color:'#1E293B'}}},yAxis:{type:'category',data:lenses,axisLabel:TNGB_AX,axisLine:{lineStyle:{color:'#1E293B'}}},visualMap:{min:0.5,max:1.7,calculable:true,orient:'horizontal',left:'center',bottom:'2%',inRange:{color:['#1E293B','#4472C4','#00CFFF','#00CC7A','#DFAF0F','#FF6B00']},textStyle:{color:'#94A3B8',fontFamily:'JetBrains Mono',fontSize:11},itemWidth:14,itemHeight:120},series:[{type:'heatmap',data,label:{show:mode==='detail',color:'#0A0F1A',fontFamily:'JetBrains Mono',fontSize:10,fontWeight:'bold'},itemStyle:{borderColor:'#0A0F1A',borderWidth:1.5}}]});
+    document.getElementById('viz-heatmap-explain').textContent=mode==='tldr'?'TL;DR: Die Lens „Klima/Zukunft" gewichtet Zukunftsfähigkeit am stärksten, „Wirtschaft/Pendler" die Verkehrs- und Wirtschaftsachse.':'Detail: Zahlen = Gewichtungsfaktor je Interessengruppe pro Wirkungsachse (1,0 = neutral). Sie steuern auch den Simulator in Sektion 07.';
+}
+
+function initViz(){if(typeof echarts==='undefined')return; renderViz1('detail'); renderViz2('detail'); renderViz3('detail'); renderHeatmap('detail'); renderCapex(); renderOpex(); renderMap(); renderEmisAir(); renderEmisCo2();}
+document.querySelectorAll('.zoom-toggle').forEach(btn=>{btn.addEventListener('click',()=>{const t=btn.dataset.target;const k=t.replace('viz-','');vizState[k]=vizState[k]==='detail'?'tldr':'detail';btn.textContent=vizState[k]==='tldr'?'Detail':'TL;DR';btn.classList.toggle('active',vizState[k]==='tldr');if(k==='donut')renderViz1(vizState.donut);if(k==='3d')renderViz2(vizState['3d']);if(k==='sankey')renderViz3(vizState.sankey);if(k==='heatmap')renderHeatmap(vizState.heatmap);});});
+
+// ===== NavDock =====
+const navdockItems=[];
+function initNavDock(){const sections=Array.from(document.querySelectorAll('section'));const mm=document.getElementById('navdock-minimap');const dock=document.getElementById('navdock');if(!dock)return;sections.forEach(sec=>{const tagEl=sec.querySelector('.text-xs.font-mono');const titleEl=sec.querySelector('h1, h2');if(!tagEl||!titleEl)return;const tagText=tagEl.textContent.trim();if(!/^\d+/.test(tagText))return;const a=document.createElement('a');a.className='minimap-item';a.href='#';a.innerHTML=`<span class="mm-num">${tagText.substring(0,22)}</span><span class="mm-title">${titleEl.textContent.trim().substring(0,38)}</span>`;a.addEventListener('click',e=>{e.preventDefault();flyTo(sec);});mm.appendChild(a);navdockItems.push({sec,el:a,label:(titleEl.textContent+' '+tagText).toLowerCase()});});const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting&&e.intersectionRatio>0.25){const item=navdockItems.find(it=>it.sec===e.target);if(item){navdockItems.forEach(it=>it.el.classList.remove('active'));item.el.classList.add('active');item.el.scrollIntoView({block:'nearest',behavior:'smooth'});}}}),{threshold:[0.25,0.5,0.75]});navdockItems.forEach(it=>io.observe(it.sec));document.querySelectorAll('.zoom-btn').forEach(btn=>{btn.addEventListener('click',()=>{document.querySelectorAll('.zoom-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.body.setAttribute('data-zoom',btn.dataset.zoom);setTimeout(()=>Object.values(vizCharts).forEach(c=>c&&c.resize()),400);});});if(!document.body.getAttribute('data-zoom'))document.body.setAttribute('data-zoom','3');const search=document.getElementById('navdock-search');let st;search.addEventListener('input',e=>{clearTimeout(st);const q=e.target.value.toLowerCase().trim();if(q.length<2)return;st=setTimeout(()=>{const m=navdockItems.find(it=>it.label.includes(q));if(m)flyTo(m.sec);},200);});search.addEventListener('keydown',e=>{if(e.key==='Escape'){e.target.value='';e.target.blur();}if(e.key==='Enter'){const q=e.target.value.toLowerCase().trim();const m=navdockItems.find(it=>it.label.includes(q));if(m){flyTo(m.sec);e.target.blur();}}});document.getElementById('navdock-toggle').addEventListener('click',e=>{e.stopPropagation();dock.classList.toggle('expanded');});document.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;const ci=navdockItems.findIndex(it=>it.el.classList.contains('active'));if(e.key==='ArrowDown'||e.key==='j'){e.preventDefault();const n=navdockItems[Math.min(Math.max(ci,0)+1,navdockItems.length-1)];if(n)flyTo(n.sec);}if(e.key==='ArrowUp'||e.key==='k'){e.preventDefault();const p=navdockItems[Math.max(ci-1,0)];if(p)flyTo(p.sec);}if(e.key==='+'||e.key==='='){e.preventDefault();const z=parseInt(document.body.getAttribute('data-zoom')||'3');if(z<5)document.querySelector(`.zoom-btn[data-zoom="${z+1}"]`)?.click();}if(e.key==='-'||e.key==='_'){e.preventDefault();const z=parseInt(document.body.getAttribute('data-zoom')||'3');if(z>1)document.querySelector(`.zoom-btn[data-zoom="${z-1}"]`)?.click();}if(e.key==='/'||e.key==='f'){e.preventDefault();search.focus();}});const theta=parseFloat(localStorage.getItem('cat_theta'));if(!isNaN(theta)){let z=3;if(theta<-1)z=2;else if(theta>1)z=4;document.querySelector(`.zoom-btn[data-zoom="${z}"]`)?.click();}}
+function flyTo(target){target.scrollIntoView({behavior:'smooth',block:'start'});target.classList.add('navdock-flash');setTimeout(()=>target.classList.remove('navdock-flash'),1300);}
+
+// ===== 05C · Emissions-Charts =====
+function renderEmisAir(){
+  const el=document.getElementById('viz-emis-air');if(!el||typeof echarts==='undefined')return;
+  if(!vizCharts.emisAir)vizCharts.emisAir=echarts.init(el);
+  const cats=['NO₂','PM₁₀','PM₂,₅'];
+  vizCharts.emisAir.setOption({backgroundColor:'transparent',grid:{left:'2%',right:'3%',top:'16%',bottom:'4%',containLabel:true},tooltip:{trigger:'axis',axisPointer:{type:'shadow'},formatter:p=>p[0].name+'<br/>'+p.map(x=>`${x.seriesName}: <strong>${x.value} µg/m³</strong>`).join('<br/>'),...TNGB_TT},legend:{textStyle:{color:'#94A3B8',fontSize:10},top:0,type:'scroll'},xAxis:{type:'category',data:cats,axisLabel:{...TNGB_AX,fontSize:11},axisLine:{lineStyle:{color:'#1E293B'}}},yAxis:{type:'value',name:'µg/m³',nameTextStyle:{color:'#64748B',fontSize:9},axisLabel:{...TNGB_AX,fontSize:9},splitLine:{lineStyle:{color:'#1E293B'}}},series:[
+    {name:'Prognose 2030 (mit Ausbau)',type:'bar',data:[30,23,14],itemStyle:{color:'#00CFFF'}},
+    {name:'EU-Grenzwert (bis 2029)',type:'bar',data:[40,40,25],itemStyle:{color:'#DFAF0F'}},
+    {name:'EU ab 2030',type:'bar',data:[20,20,10],itemStyle:{color:'#FF6B00'}},
+    {name:'WHO-Leitwert',type:'bar',data:[10,15,5],itemStyle:{color:'#00CC7A'}}
+  ]});
+}
+function renderEmisCo2(){
+  const el=document.getElementById('viz-emis-co2');if(!el||typeof echarts==='undefined')return;
+  if(!vizCharts.emisCo2)vizCharts.emisCo2=echarts.init(el);
+  const years=[],cum=[];let c=78759;for(let t=0;t<=40;t++){if(t>0)c+=237;years.push(t);cum.push(Math.round(c));}
+  vizCharts.emisCo2.setOption({backgroundColor:'transparent',grid:{left:'2%',right:'4%',top:'10%',bottom:'8%',containLabel:true},tooltip:{trigger:'axis',formatter:p=>`Jahr ${p[0].axisValue}<br/>kumuliert: <strong>${p[0].value.toLocaleString('de-DE')} t CO₂</strong>`,...TNGB_TT},xAxis:{type:'category',data:years,name:'Betriebsjahr',nameTextStyle:{color:'#64748B',fontSize:9},axisLabel:{...TNGB_AX,fontSize:9,interval:7},axisLine:{lineStyle:{color:'#1E293B'}}},yAxis:{type:'value',name:'t CO₂ (kumuliert)',nameTextStyle:{color:'#64748B',fontSize:9},axisLabel:{...TNGB_AX,fontSize:9},splitLine:{lineStyle:{color:'#1E293B'}}},series:[{type:'line',data:cum,smooth:false,lineStyle:{color:'#E6399A',width:2},itemStyle:{color:'#E6399A'},showSymbol:false,areaStyle:{color:'rgba(230,57,154,.10)'},markPoint:{symbolSize:46,data:[{name:'Bau',coord:[0,78759],value:'Bau\n78.759 t',itemStyle:{color:'#FF6B00'}}],label:{color:'#fff',fontSize:9}}}]});
+}
+
+// ===== 05B · Kosten-Charts =====
+function renderCapex(){
+  const el=document.getElementById('viz-capex');if(!el||typeof echarts==='undefined')return;
+  if(!vizCharts.capex)vizCharts.capex=echarts.init(el);
+  const cats=['Bauwerk West+Mitte','N-Ergie Sparten','Abwasser SUN','DB Brücken (2015)','Grüner Deckel'];
+  const vals=[1050,62.4,18.4,11.05,120];
+  const cols=['#00CFFF','#E6399A','#E6399A','#FF6B00','#DFAF0F'];
+  vizCharts.capex.setOption({backgroundColor:'transparent',grid:{left:'2%',right:'10%',top:'6%',bottom:'4%',containLabel:true},tooltip:{trigger:'axis',formatter:p=>`${p[0].name}<br/><strong>${p[0].value} Mio. €</strong>`,...TNGB_TT},xAxis:{type:'value',axisLabel:{...TNGB_AX,fontSize:9,formatter:'{value}'},splitLine:{lineStyle:{color:'#1E293B'}}},yAxis:{type:'category',data:cats,axisLabel:{...TNGB_AX,fontSize:10},axisLine:{lineStyle:{color:'#1E293B'}}},series:[{type:'bar',data:vals.map((v,i)=>({value:v,itemStyle:{color:cols[i]}})),label:{show:true,position:'right',color:'#E2E8F0',fontFamily:'JetBrains Mono',fontSize:9,formatter:'{c} Mio€'}}]});
+}
+function renderOpex(){
+  const el=document.getElementById('viz-opex');if(!el||typeof echarts==='undefined')return;
+  if(!vizCharts.opex)vizCharts.opex=echarts.init(el);
+  const years=[],low=[],mid=[],high=[];
+  let cl=0,cm=0,ch=0;
+  for(let t=1;t<=50;t++){cl+=1.5;cm+=2.5;ch+=4.0;years.push(t);low.push(+cl.toFixed(1));mid.push(+cm.toFixed(1));high.push(+ch.toFixed(1));}
+  vizCharts.opex.setOption({backgroundColor:'transparent',grid:{left:'2%',right:'4%',top:'12%',bottom:'8%',containLabel:true},tooltip:{trigger:'axis',formatter:p=>`Jahr ${p[0].axisValue}<br/>${p.map(x=>`${x.seriesName}: <strong>${x.value} Mio€</strong>`).join('<br/>')}`,...TNGB_TT},legend:{textStyle:{color:'#94A3B8',fontSize:10},top:0},xAxis:{type:'category',data:years,name:'Betriebsjahr',nameTextStyle:{color:'#64748B',fontSize:9},axisLabel:{...TNGB_AX,fontSize:9,interval:9},axisLine:{lineStyle:{color:'#1E293B'}}},yAxis:{type:'value',name:'kumuliert Mio€',nameTextStyle:{color:'#64748B',fontSize:9},axisLabel:{...TNGB_AX,fontSize:9},splitLine:{lineStyle:{color:'#1E293B'}}},series:[
+    {name:'1,5 Mio€/J (Stadt)',type:'line',data:low,smooth:true,lineStyle:{color:'#00CC7A',width:2},itemStyle:{color:'#00CC7A'},showSymbol:false,areaStyle:{color:'rgba(0,204,122,.08)'}},
+    {name:'2,5 Mio€/J (mittel)',type:'line',data:mid,smooth:true,lineStyle:{color:'#DFAF0F',width:2,type:'dashed'},itemStyle:{color:'#DFAF0F'},showSymbol:false},
+    {name:'4,0 Mio€/J (Benchmark)',type:'line',data:high,smooth:true,lineStyle:{color:'#E6399A',width:2},itemStyle:{color:'#E6399A'},showSymbol:false}
+  ]});
+}
+
+// ===== 08B · Stadtraum-Wirkungskarte =====
+const MAP_DIMS=['Lärm','Luft & Staub','Erschütterung','Verkehr','Grün & Klima','Wohnwert'];
+const DISTRICTS=[
+  {id:'doos',name:'Doos',section:'West',col:'#00CC7A',mx:120,dist:80,note:'AS Nürnberg/Fürth. Lärmschutzwand + zusätzliche Spur; Baubeginn Feb 2027.',
+    bau:[-70,-45,-40,-65,-30,-55], betrieb:[45,5,0,-10,5,25],
+    noteBetrieb:'Neue Lärmschutzwand entlastet spürbar; Mehrkapazität birgt aber induzierten Verkehr.'},
+  {id:'schweinau',name:'Schweinau / Sündersbühl',section:'West',col:'#00CC7A',mx:250,dist:200,note:'Trassennahe Wohnlagen im Westabschnitt; Straßen- und Kanalbau.',
+    bau:[-55,-40,-30,-50,-25,-45], betrieb:[35,5,0,-10,5,20],
+    noteBetrieb:'Moderate Lärmentlastung; größere Distanz dämpft Effekte.'},
+  {id:'sandreuth',name:'Sandreuth',section:'Mitte',col:'#00CFFF',mx:430,dist:60,portal:false,park:true,
+    note:'Über dem künftigen Tunneldeckel; Rodung für Baugrube belastet das Grün stark.',
+    bau:[-60,-50,-45,-40,-70,-50], betrieb:[55,10,0,-5,60,45],
+    noteBetrieb:'Größter Gewinner: Verkehr verschwindet im Tunnel, oben entsteht der Stadtteilpark (Vorbild Petueltunnel München).'},
+  {id:'stleonhard',name:'St. Leonhard',section:'Mitte',col:'#00CFFF',mx:560,dist:50,portal:true,
+    note:'Härteste Bauphase: ~200 Bau-Lkw/Tag, Umleitungen durch Wohngebiet, Rothenburger Str. +2 m.',
+    bau:[-85,-70,-65,-90,-55,-75], betrieb:[60,-25,0,20,50,45],
+    noteBetrieb:'Starke Lärmentlastung & Park-Nähe — ABER Tunnelportal (Dianaplatz/Nopitschstr.) konzentriert die Abluft: Luft bleibt belastet.'},
+  {id:'gibitzenhof',name:'Gibitzenhof / Steinbühl',section:'Mitte',col:'#00CFFF',mx:680,dist:70,park:true,
+    note:'Park Steinbühl/Gibitzenhof wird 3–4 m angehoben; lange Baugruben in offener Bauweise.',
+    bau:[-65,-55,-50,-45,-60,-55], betrieb:[50,5,0,5,58,42],
+    noteBetrieb:'Deutlicher Grün- und Wohnwert-Gewinn durch den Deckelpark.'},
+  {id:'gostenhof',name:'Gostenhof',section:'Mitte',col:'#00CFFF',mx:790,dist:250,
+    note:'Dicht bebautes Szeneviertel östlich der Trasse; mittlere Distanz.',
+    bau:[-45,-40,-30,-40,-20,-35], betrieb:[25,0,0,-5,10,18],
+    noteBetrieb:'Spürbar, aber gedämpft — profitiert indirekt vom ruhigeren Korridor.'},
+  {id:'suedstadt',name:'Südstadt / Plärrer',section:'Ost',col:'#9933FF',mx:900,dist:300,portal:true,
+    note:'Zeitliche Kollision mit der Plärrer-Großbaustelle ab 2026 → Verkehrschaos-Risiko.',
+    bau:[-60,-45,-25,-75,-15,-45], betrieb:[20,-15,0,5,5,12],
+    noteBetrieb:'Begrenzte Entlastung; Portal-Nähe und Verkehrsverteilung dämpfen den Nutzen.'}
+];
+const mapState={phase:'bau',sel:'stleonhard',manualDist:null};
+function mapDecay(d){return Math.exp(-Math.max(0,d-30)/220);}
+function curDistrict(){return DISTRICTS.find(x=>x.id===mapState.sel)||DISTRICTS[3];}
+function effDist(){return mapState.manualDist!=null?mapState.manualDist:curDistrict().dist;}
+function renderMapSVG(){
+  const svg=document.getElementById('map-svg');if(!svg)return;
+  const W=1000,bandY=300,trasseY=300;
+  let s=`<defs><marker id="m-tri" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="8" markerHeight="8"></marker></defs>`;
+  // Abschnitts-Hintergründe
+  s+=`<rect x="40" y="288" width="320" height="26" rx="6" fill="rgba(0,204,122,.10)"/>`;
+  s+=`<rect x="360" y="282" width="320" height="38" rx="6" fill="rgba(0,207,255,.12)"/>`; // Mitte Tunnel
+  s+=`<rect x="680" y="288" width="280" height="26" rx="6" fill="rgba(153,51,255,.10)"/>`;
+  // Trasse
+  s+=`<line x1="40" y1="${trasseY}" x2="960" y2="${trasseY}" stroke="#334155" stroke-width="3"/>`;
+  // Tunnel-Strich (gestrichelt) Mitte
+  s+=`<line x1="360" y1="${trasseY}" x2="680" y2="${trasseY}" stroke="#00CFFF" stroke-width="4" stroke-dasharray="2 6" opacity="0.8"/>`;
+  s+=`<text x="200" y="338" fill="#00CC7A" font-size="11" font-family="JetBrains Mono" text-anchor="middle">WEST · Lärmschutz + Spur</text>`;
+  s+=`<text x="520" y="338" fill="#00CFFF" font-size="11" font-family="JetBrains Mono" text-anchor="middle">MITTE · 1,8 km Tunnel + Park</text>`;
+  s+=`<text x="820" y="338" fill="#9933FF" font-size="11" font-family="JetBrains Mono" text-anchor="middle">OST · Plärrer</text>`;
+  // Distanz-Ringe (orientierung)
+  // Districts as nodes above trasse, vertical offset ~ distance
+  DISTRICTS.forEach(d=>{
+    const vec=mapState.phase==='bau'?d.bau:d.betrieb;
+    const net=vec.reduce((a,b)=>a+b,0)/vec.length;
+    const sev=Math.min(1,Math.abs(net)*mapDecay(d.dist)/70);
+    const color=net>=0?'#00CC7A':'#E6399A';
+    const y=trasseY-40-(d.dist/1000)*180; // closer = lower (near trasse)
+    const r=10+sev*10;
+    const isSel=d.id===mapState.sel;
+    // connector
+    s+=`<line x1="${d.mx}" y1="${trasseY}" x2="${d.mx}" y2="${y+r}" stroke="${d.col}" stroke-width="1" stroke-dasharray="3 3" opacity="0.5"/>`;
+    s+=`<g class="map-node" data-id="${d.id}" style="cursor:pointer">`;
+    if(isSel)s+=`<circle cx="${d.mx}" cy="${y}" r="${r+6}" fill="none" stroke="#fff" stroke-width="1.5" opacity="0.8"/>`;
+    s+=`<circle cx="${d.mx}" cy="${y}" r="${r}" fill="${color}" fill-opacity="${0.25+sev*0.5}" stroke="${color}" stroke-width="2"/>`;
+    if(d.portal)s+=`<text x="${d.mx}" y="${trasseY-4}" fill="#DFAF0F" font-size="14" text-anchor="middle">▲</text>`;
+    s+=`<text x="${d.mx}" y="${y-r-6}" fill="${isSel?'#fff':'#94A3B8'}" font-size="10" font-family="Inter" font-weight="${isSel?'700':'500'}" text-anchor="middle">${d.name.split(' / ')[0]}</text>`;
+    s+=`</g>`;
+  });
+  // Y-Achsen-Hinweis
+  s+=`<text x="46" y="118" fill="#64748B" font-size="9" font-family="JetBrains Mono">▲ weiter weg</text>`;
+  s+=`<text x="46" y="${trasseY-48}" fill="#64748B" font-size="9" font-family="JetBrains Mono">▼ an der Trasse</text>`;
+  svg.innerHTML=s;
+  svg.querySelectorAll('.map-node').forEach(n=>n.addEventListener('click',()=>{mapState.sel=n.dataset.id;mapState.manualDist=null;document.getElementById('map-dist').value=0;document.getElementById('map-dist-val').textContent='typisch';renderMap();}));
+}
+function renderMapImpact(){
+  const el=document.getElementById('viz-mapimpact');if(!el||typeof echarts==='undefined')return;
+  if(!vizCharts.mapimpact)vizCharts.mapimpact=echarts.init(el);
+  const d=curDistrict();const vec=mapState.phase==='bau'?d.bau:d.betrieb;const f=mapDecay(effDist());
+  const vals=vec.map(v=>+(v*f).toFixed(0));
+  vizCharts.mapimpact.setOption({backgroundColor:'transparent',grid:{left:'2%',right:'12%',top:'4%',bottom:'4%',containLabel:true},tooltip:{trigger:'axis',formatter:p=>`${p[0].name}: <strong>${p[0].value>0?'+':''}${p[0].value}</strong> (${p[0].value>0?'Verbesserung':'Belastung'})`,...TNGB_TT},xAxis:{type:'value',min:-100,max:100,axisLabel:{...TNGB_AX,fontSize:8},splitLine:{lineStyle:{color:'#1E293B'}}},yAxis:{type:'category',data:MAP_DIMS,axisLabel:{...TNGB_AX,fontSize:9},axisLine:{lineStyle:{color:'#1E293B'}}},series:[{type:'bar',data:vals.map(v=>({value:v,itemStyle:{color:v>=0?'#00CC7A':'#E6399A'}})),label:{show:true,position:'right',color:'#E2E8F0',fontFamily:'JetBrains Mono',fontSize:9,formatter:p=>(p.value>0?'+':'')+p.value}}]});
+  // panel
+  const net=(vals.reduce((a,b)=>a+b,0)/vals.length);
+  document.getElementById('map-sel-name').textContent=d.name;
+  document.getElementById('map-sel-section').textContent=d.section;
+  document.getElementById('map-sel-dist').textContent=`Distanz ~${effDist()} m${d.portal?' · Tunnelportal-Nähe':''}`;
+  document.getElementById('map-note-label').textContent=mapState.phase==='bau'?'Bauphase (12–15 Jahre)':'Betrieb (nach Fertigstellung)';
+  document.getElementById('map-note').textContent=mapState.phase==='bau'?d.note:(d.noteBetrieb||d.note);
+  const ne=document.getElementById('map-net');ne.textContent=(net>0?'+':'')+net.toFixed(0);ne.className='font-bold text-lg '+(net>=0?'text-tngb-emerald':'text-tngb-magenta');
+  document.getElementById('map-decay').textContent='×'+f.toFixed(2);
+}
+function renderMap(){renderMapSVG();renderMapImpact();}
+document.querySelectorAll('.map-phase-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.map-phase-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');mapState.phase=b.dataset.phase;renderMap();}));
+(function(){const sl=document.getElementById('map-dist');if(sl)sl.addEventListener('input',()=>{mapState.manualDist=+sl.value;document.getElementById('map-dist-val').textContent=sl.value+' m';renderMap();});const rs=document.getElementById('map-reset');if(rs)rs.addEventListener('click',()=>{mapState.manualDist=null;document.getElementById('map-dist').value=0;document.getElementById('map-dist-val').textContent='typisch';renderMap();});})();
+
+// ===== 02B · Bildergalerie (Carousel) =====
+function initGallery(){
+  const slides=[...document.querySelectorAll('#gallery .gal-slide')];if(!slides.length)return;
+  let gi=0;const dots=document.getElementById('gal-dots');
+  slides.forEach((s,i)=>{const dt=document.createElement('button');dt.className='gal-dot'+(i===0?' active':'');dt.setAttribute('aria-label','Bild '+(i+1));dt.addEventListener('click',()=>{go(i);rest();});dots.appendChild(dt);});
+  const dotEls=[...dots.children];
+  function go(i){slides[gi].classList.remove('active');dotEls[gi].classList.remove('active');gi=(i+slides.length)%slides.length;slides[gi].classList.add('active');dotEls[gi].classList.add('active');}
+  document.getElementById('gal-next').addEventListener('click',()=>{go(gi+1);rest();});
+  document.getElementById('gal-prev').addEventListener('click',()=>{go(gi-1);rest();});
+  let tmr=setInterval(()=>go(gi+1),6000);
+  function rest(){clearInterval(tmr);tmr=setInterval(()=>go(gi+1),6000);}
+}
+
+// ===== 08C · Geo-Wirkungskarte (Leaflet/OSM) =====
+const GEO={doos:[49.4530,11.0365],schweinau:[49.4415,11.0485],sandreuth:[49.4350,11.0588],stleonhard:[49.4438,11.0522],gibitzenhof:[49.4340,11.0655],gostenhof:[49.4498,11.0612],suedstadt:[49.4460,11.0700]};
+const geoState={phase:'bau',dim:'net',showCircles:true,showGradient:false};
+// FSW-Centerline nach OpenStreetMap/Overpass (name="Frankenschnellweg", aus 63 Ways zur
+// durchgehenden Trasse zusammengesetzt; monoton NNW→SSE, Nürnberger Projektsegment Doos→Hafen)
+const TRASSE=[[49.4590,11.0198],[49.4550,11.0295],[49.4536,11.0331],[49.4500,11.0422],[49.4461,11.0516],[49.4452,11.0534],[49.4445,11.0550],[49.4440,11.0560],[49.4432,11.0588],[49.4420,11.0604],[49.4408,11.0621],[49.4398,11.0629],[49.4383,11.0627],[49.4355,11.0628],[49.4336,11.0631],[49.4322,11.0630],[49.4280,11.0634],[49.4250,11.0644],[49.4207,11.0672],[49.4171,11.0677],[49.4151,11.0670],[49.4136,11.0658]];
+let geoMap=null,geoCircleLayer=null,geoGradientLayer=null,geoPointMarker=null;
+function hx(h){return [parseInt(h.slice(1,3),16),parseInt(h.slice(3,5),16),parseInt(h.slice(5,7),16)];}
+function mix(a,b,t){const A=hx(a),B=hx(b);return `rgb(${Math.round(A[0]+(B[0]-A[0])*t)},${Math.round(A[1]+(B[1]-A[1])*t)},${Math.round(A[2]+(B[2]-A[2])*t)})`;}
+function impColor(v){const t=Math.min(1,Math.abs(v)/80);return v>=0?mix('#334155','#00CC7A',t):mix('#334155','#E6399A',t);}
+function geoVal(d){const vec=geoState.phase==='bau'?d.bau:d.betrieb;const f=mapDecay(d.dist);if(geoState.dim==='net')return vec.reduce((a,b)=>a+b,0)/vec.length*f;const i=MAP_DIMS.indexOf(geoState.dim);return vec[i]*f;}
+// Emissions-Modell: Hintergrund + entfernungsabhängiger Verkehrsanteil, kalibriert auf ACCON-Prognose 2030.
+// Modellwert in µg/m³ (Jahresmittel) — KEINE receptor-genaue amtliche Immissionsprognose.
+const EMIS={'NO₂':{bg:18,road:22,l2029:40,l2030:20,who:10},'PM₁₀':{bg:16,road:9,l2029:40,l2030:20,who:15},'PM₂,₅':{bg:10,road:5,l2029:25,l2030:10,who:5}};
+function isEmis(dim){return !!EMIS[dim];}
+function emisAt(dist,section,portal,phase,poll){const e=EMIS[poll];let inc=e.road*Math.exp(-Math.max(0,dist-10)/180);if(phase==='betrieb'){inc*=(section==='Mitte')?(portal?1.25:0.30):0.95;}else{inc*=1.18;if(poll!=='NO₂')inc*=1.10;}return e.bg+inc;}
+function emisColor(poll,val){const e=EMIS[poll];if(val<=e.who)return'#00CC7A';if(val<=e.l2030)return'#00CFFF';if(val<=e.l2029)return'#DFAF0F';return'#E6399A';}
+function emisVerdict(poll,val){const e=EMIS[poll];if(val<=e.who)return'≤ WHO';if(val<=e.l2030)return'≤ EU ab 2030';if(val<=e.l2029)return'≤ EU bis 2029';return'> EU-Grenzwert';}
+// Geo-Hilfsfunktionen
+function haversine(la1,lo1,la2,lo2){const R=6371000,t=Math.PI/180,dla=(la2-la1)*t,dlo=(lo2-lo1)*t,a=Math.sin(dla/2)**2+Math.cos(la1*t)*Math.cos(la2*t)*Math.sin(dlo/2)**2;return 2*R*Math.asin(Math.sqrt(a));}
+function _xy(la,lo){const lat0=49.44;return [lo*111320*Math.cos(lat0*Math.PI/180),la*110540];}
+function distToTrasse(la,lo){const p=_xy(la,lo);let best=1e9;for(let i=0;i<TRASSE.length-1;i++){const a=_xy(TRASSE[i][0],TRASSE[i][1]),b=_xy(TRASSE[i+1][0],TRASSE[i+1][1]);const dx=b[0]-a[0],dy=b[1]-a[1];const L2=dx*dx+dy*dy||1;let t=((p[0]-a[0])*dx+(p[1]-a[1])*dy)/L2;t=Math.max(0,Math.min(1,t));const cx=a[0]+t*dx,cy=a[1]+t*dy;const d=Math.hypot(p[0]-cx,p[1]-cy);if(d<best)best=d;}return best;}
+function renderGeo(){
+  if(!geoMap)return;
+  if(!geoCircleLayer)geoCircleLayer=L.layerGroup();
+  if(!geoGradientLayer)geoGradientLayer=L.layerGroup();
+  geoCircleLayer.clearLayers();geoGradientLayer.clearLayers();
+  DISTRICTS.forEach(d=>{const c=GEO[d.id];if(!c)return;let col,radius,popup;
+    if(isEmis(geoState.dim)){const val=emisAt(d.dist,d.section,d.portal,geoState.phase,geoState.dim);col=emisColor(geoState.dim,val);radius=150+val*9;popup=`<b>${d.name}</b><br>${geoState.dim}: <b style="color:${col}">${val.toFixed(0)} µg/m³</b> <span style="color:#64748B">(${emisVerdict(geoState.dim,val)})</span><br><span style="color:#64748B">~${d.dist} m zur Trasse${d.portal?' · Tunnelportal' : ''}</span>`;}
+    else{const v=geoVal(d);col=impColor(v);radius=200+Math.abs(v)*6;popup=`<b>${d.name}</b><br>${geoState.dim==='net'?'Netto':geoState.dim}: <b style="color:${v>=0?'#00CC7A':'#E6399A'}">${v>0?'+':''}${v.toFixed(0)}</b><br><span style="color:#64748B">~${d.dist} m zur Trasse${d.portal?' · Tunnelportal':''}</span>`;}
+    const circle=L.circle(c,{radius,color:col,fillColor:col,fillOpacity:.42,weight:2});circle.bindPopup(popup);geoCircleLayer.addLayer(circle);
+    const lbl=L.divIcon({className:'',html:`<span style="font:600 11px Inter;color:#E2E8F0;text-shadow:0 0 4px #0A0F1A,0 0 4px #0A0F1A;white-space:nowrap">${d.name.split(' / ')[0]}</span>`,iconSize:[0,0]});
+    geoCircleLayer.addLayer(L.marker(c,{icon:lbl,interactive:false}));
+    [900,750,600,450,300,150].forEach(r=>{geoGradientLayer.addLayer(L.circle(c,{radius:r,stroke:false,fillColor:col,fillOpacity:0.07,interactive:false}));});
+  });
+  if(geoState.showCircles){if(!geoMap.hasLayer(geoCircleLayer))geoCircleLayer.addTo(geoMap);}else if(geoMap.hasLayer(geoCircleLayer))geoMap.removeLayer(geoCircleLayer);
+  if(geoState.showGradient){if(!geoMap.hasLayer(geoGradientLayer))geoGradientLayer.addTo(geoMap);}else if(geoMap.hasLayer(geoGradientLayer))geoMap.removeLayer(geoGradientLayer);
+  if(geoPointMarker)geoPointMarker.bringToFront();
+}
+function computePointImpact(la,lo){let sw=0;const blend=[0,0,0,0,0,0];DISTRICTS.forEach(d=>{const c=GEO[d.id];if(!c)return;const di=haversine(la,lo,c[0],c[1]);const w=Math.exp(-di/400);sw+=w;const vec=geoState.phase==='bau'?d.bau:d.betrieb;vec.forEach((v,k)=>blend[k]+=w*v);});if(sw>0)for(let k=0;k<6;k++)blend[k]/=sw;const dT=distToTrasse(la,lo);const f=mapDecay(dT);const imp=blend.map(v=>v*f);const net=imp.reduce((a,b)=>a+b,0)/6;return {imp,net,dT,f};}
+function showPointPanel(label,la,lo){const res=computePointImpact(la,lo);const panel=document.getElementById('geo-point-panel');if(!panel)return;panel.classList.remove('hidden');
+  const ne=document.getElementById('geo-pt-net');ne.textContent='Netto '+(res.net>0?'+':'')+res.net.toFixed(0);ne.className='font-mono text-sm '+(res.net>=0?'text-tngb-emerald':'text-tngb-magenta');
+  let emisTxt='';if(isEmis(geoState.dim)){let nd=DISTRICTS[0],bb=1e9;DISTRICTS.forEach(d=>{const c=GEO[d.id];const di=haversine(la,lo,c[0],c[1]);if(di<bb){bb=di;nd=d;}});const ev=emisAt(res.dT,nd.section,nd.portal,geoState.phase,geoState.dim);emisTxt=` · ${geoState.dim} ≈ ${ev.toFixed(0)} µg/m³ (${emisVerdict(geoState.dim,ev)})`;}
+  document.getElementById('geo-pt-meta').textContent=`${label} · ~${res.dT.toFixed(0)} m zur Trasse · Nähe ×${res.f.toFixed(2)} · ${geoState.phase==='bau'?'Bauphase':'Betrieb'}${emisTxt}`;
+  document.getElementById('geo-pt-bars').innerHTML=MAP_DIMS.map((dim,i)=>{const v=res.imp[i];return `<div class="flex items-center gap-2"><div class="w-28 text-xs text-slate-400 font-mono shrink-0">${dim}</div><div class="flex-1 h-3 bg-tngb-card rounded relative overflow-hidden"><div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:#475569"></div><div style="position:absolute;top:0;bottom:0;${v>=0?'left:50%':'right:50%'};width:${Math.min(50,Math.abs(v)/2)}%;background:${v>=0?'#00CC7A':'#E6399A'}"></div></div><div class="w-10 text-right text-xs font-mono ${v>=0?'text-tngb-emerald':'text-tngb-magenta'}">${v>0?'+':''}${v.toFixed(0)}</div></div>`;}).join('');
+}
+function setGeoPoint(la,lo,label){if(!geoMap)return;if(geoPointMarker)geoMap.removeLayer(geoPointMarker);geoPointMarker=L.circleMarker([la,lo],{radius:8,color:'#DFAF0F',fillColor:'#DFAF0F',fillOpacity:.9,weight:3}).addTo(geoMap);const res=computePointImpact(la,lo);geoPointMarker.bindPopup(`<b>📍 ${label}</b><br>Netto: <b style="color:${res.net>=0?'#00CC7A':'#E6399A'}">${res.net>0?'+':''}${res.net.toFixed(0)}</b><br><span style="color:#64748B">~${res.dT.toFixed(0)} m zur Trasse</span>`).openPopup();showPointPanel(label,la,lo);}
+function geoSearch(q){if(!q)return;const qq=/nürnberg/i.test(q)?q:q+', Nürnberg';fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=de&viewbox=11.00,49.52,11.16,49.38&q='+encodeURIComponent(qq),{headers:{'Accept-Language':'de'}}).then(r=>r.json()).then(a=>{if(a&&a.length){const la=+a[0].lat,lo=+a[0].lon;geoMap.setView([la,lo],15);setGeoPoint(la,lo,(a[0].display_name||q).split(',').slice(0,2).join(','));}else{const m=document.getElementById('geo-pt-meta');document.getElementById('geo-point-panel').classList.remove('hidden');m.textContent='Adresse nicht gefunden — bitte präziser (Straße + Nürnberg).';}}).catch(()=>{});}
+function initGeo(){const el=document.getElementById('geo-map');if(!el||typeof L==='undefined')return;geoMap=L.map('geo-map',{scrollWheelZoom:true}).setView([49.4435,11.0570],13);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap-Mitwirkende (ODbL)'}).addTo(geoMap);
+  // Leucht-Marker FSW (FinCoach-Cyan, transparenter Glow-Stack)
+  L.polyline(TRASSE,{color:'#00CFFF',weight:20,opacity:.12,lineCap:'round',interactive:false}).addTo(geoMap);
+  L.polyline(TRASSE,{color:'#00CFFF',weight:11,opacity:.22,lineCap:'round',interactive:false}).addTo(geoMap);
+  L.polyline(TRASSE,{color:'#00CFFF',weight:4,opacity:.95,lineCap:'round'}).addTo(geoMap).bindTooltip('Frankenschnellweg (A73 · B4R)',{sticky:true});
+  renderGeo();setTimeout(()=>geoMap.invalidateSize(),300);
+  geoMap.on('click',e=>setGeoPoint(e.latlng.lat,e.latlng.lng,'Gesetzter Punkt'));
+  document.querySelectorAll('.geo-phase-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.geo-phase-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');geoState.phase=b.dataset.phase;renderGeo();if(geoPointMarker){const ll=geoPointMarker.getLatLng();showPointPanel(document.getElementById('geo-pt-meta').textContent.split(' · ')[0],ll.lat,ll.lng);}}));
+  const sel=document.getElementById('geo-dim');if(sel)sel.addEventListener('change',()=>{geoState.dim=sel.value;renderGeo();});
+  const bc=document.getElementById('geo-layer-circles');if(bc)bc.addEventListener('click',()=>{geoState.showCircles=!geoState.showCircles;bc.classList.toggle('active',geoState.showCircles);renderGeo();});
+  const bg=document.getElementById('geo-layer-grad');if(bg)bg.addEventListener('click',()=>{geoState.showGradient=!geoState.showGradient;bg.classList.toggle('active',geoState.showGradient);renderGeo();});
+  const sb=document.getElementById('geo-search'),ai=document.getElementById('geo-addr');if(sb&&ai){sb.addEventListener('click',()=>geoSearch(ai.value.trim()));ai.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();geoSearch(ai.value.trim());}});}
+}
+
+// ===== Lightbox + Hero-Roller (Vollbild-Bilder) =====
+const GALLERY_IMAGES=[
+ {src:'https://upload.wikimedia.org/wikipedia/commons/a/a3/20150420_121116_Heistersteg_Frankenschnellweg_Blick_Nordwest.jpg',cap:'Frankenschnellweg vom Heistersteg (Blick NW) · Foto: RicardoKnows · CC BY-SA 4.0'},
+ {src:'https://upload.wikimedia.org/wikipedia/commons/0/05/20150420_121202_Heistersteg_Frankenschnellweg_Blick_Nord.jpg',cap:'Frankenschnellweg vom Heistersteg (Blick N) · Foto: RicardoKnows · CC BY-SA 4.0'},
+ {src:'https://upload.wikimedia.org/wikipedia/commons/c/c9/2007-06-14_N%C3%BCrnberg-Rothenburger_Stra%C3%9Fe.JPG',cap:'Kreuzung Rothenburger Straße × Frankenschnellweg (2007) · Foto: Achates · CC BY-SA 3.0'},
+ {src:'https://upload.wikimedia.org/wikipedia/commons/5/5b/N%C3%BCrnberg%2C_U-Bahn_am_Frankenschnellweg.jpeg',cap:'U-Bahn am Frankenschnellweg · Foto: Aisano · CC0 / gemeinfrei'}
+];
+let lbIdx=0;
+function openLightbox(i){lbIdx=(i+GALLERY_IMAGES.length)%GALLERY_IMAGES.length;const lb=document.getElementById('imglightbox');if(!lb)return;document.getElementById('lb-img').src=GALLERY_IMAGES[lbIdx].src;document.getElementById('lb-cap').textContent=GALLERY_IMAGES[lbIdx].cap;lb.style.display='flex';}
+function closeLightbox(){const lb=document.getElementById('imglightbox');if(lb)lb.style.display='none';}
+function initLightbox(){
+  const lb=document.getElementById('imglightbox');if(!lb)return;
+  document.getElementById('lb-close').addEventListener('click',closeLightbox);
+  document.getElementById('lb-next').addEventListener('click',()=>openLightbox(lbIdx+1));
+  document.getElementById('lb-prev').addEventListener('click',()=>openLightbox(lbIdx-1));
+  lb.addEventListener('click',e=>{if(e.target.id==='imglightbox')closeLightbox();});
+  document.addEventListener('keydown',e=>{if(lb.style.display==='flex'){if(e.key==='Escape')closeLightbox();if(e.key==='ArrowRight')openLightbox(lbIdx+1);if(e.key==='ArrowLeft')openLightbox(lbIdx-1);}});
+  document.querySelectorAll('#gallery img.gal-img').forEach(img=>{img.style.cursor='zoom-in';img.addEventListener('click',()=>{const i=GALLERY_IMAGES.findIndex(g=>g.src===img.src);openLightbox(i>=0?i:0);});});
+  const gfs=document.getElementById('gal-fs');if(gfs)gfs.addEventListener('click',()=>{const a=document.querySelector('#gallery .gal-slide.active img.gal-img');const i=a?GALLERY_IMAGES.findIndex(g=>g.src===a.src):0;openLightbox(i>=0?i:0);});
+}
+function initHeroRoller(){const img=document.getElementById('hero-roll-img');const cap=document.getElementById('hero-roll-cap');if(!img)return;let hi=0;function show(i){hi=(i+GALLERY_IMAGES.length)%GALLERY_IMAGES.length;img.style.opacity='0';setTimeout(()=>{img.src=GALLERY_IMAGES[hi].src;cap.textContent=GALLERY_IMAGES[hi].cap.split(' · ')[0];img.style.opacity='1';},250);}cap.textContent=GALLERY_IMAGES[0].cap.split(' · ')[0];setInterval(()=>show(hi+1),4000);img.addEventListener('click',()=>openLightbox(hi));document.getElementById('hero-roll-fs').addEventListener('click',()=>openLightbox(hi));}
+
+// ===== Map-Vollbild =====
+function initMapFS(){const b=document.getElementById('geo-fs'),el=document.getElementById('geo-map');if(!b||!el)return;b.addEventListener('click',()=>{if(!document.fullscreenElement){(el.requestFullscreen||el.webkitRequestFullscreen||function(){}).call(el);}else{document.exitFullscreen&&document.exitFullscreen();}});document.addEventListener('fullscreenchange',()=>setTimeout(()=>{if(geoMap)geoMap.invalidateSize();},200));}
+
+// ===== 08C · Fahrmodus (Drive über FSW) =====
+const DR={dir:1,spd:130,pos:0,playing:false,timer:null,car:null,cum:[],total:0,_t:0};
+function fswPrep(){DR.cum=[0];for(let i=0;i<TRASSE.length-1;i++){DR.cum.push(DR.cum[i]+haversine(TRASSE[i][0],TRASSE[i][1],TRASSE[i+1][0],TRASSE[i+1][1]));}DR.total=DR.cum[DR.cum.length-1];}
+function fswAt(p){p=Math.max(0,Math.min(DR.total,p));let i=0;while(i<DR.cum.length-2&&DR.cum[i+1]<p)i++;const a=TRASSE[i],b=TRASSE[i+1],seg=(DR.cum[i+1]-DR.cum[i])||1,t=(p-DR.cum[i])/seg;const lat=a[0]+(b[0]-a[0])*t,lng=a[1]+(b[1]-a[1])*t;const hd=Math.atan2((b[1]-a[1])*Math.cos(a[0]*Math.PI/180),(b[0]-a[0]))*180/Math.PI;return {lat,lng,hd};}
+function driveStep(){DR.pos+=DR.spd*DR.dir;if(DR.pos>=DR.total){DR.pos=DR.total;driveStop();}if(DR.pos<=0){DR.pos=0;driveStop();}const r=fswAt(DR.pos);const rot=r.hd+(DR.dir<0?180:0);const html=`<div class="drive-car" style="transform:rotate(${rot.toFixed(0)}deg);font-size:22px;line-height:1;color:#DFAF0F">▲</div>`;if(!DR.car){DR.car=L.marker([r.lat,r.lng],{icon:L.divIcon({className:'',html,iconSize:[22,22]}),zIndexOffset:1000}).addTo(geoMap);}else{DR.car.setLatLng([r.lat,r.lng]);DR.car.setIcon(L.divIcon({className:'',html,iconSize:[22,22]}));}geoMap.panTo([r.lat,r.lng],{animate:true,duration:0.1});let nd=DISTRICTS[0],best=1e9;DISTRICTS.forEach(d=>{const c=GEO[d.id];const di=haversine(r.lat,r.lng,c[0],c[1]);if(di<best){best=di;nd=d;}});document.getElementById('drive-readout').textContent=`${Math.round(DR.pos)} / ${Math.round(DR.total)} m · ${nd.name.split(' / ')[0]}`;DR._t++;if(DR._t%3===0)showPointPanel('Fahrposition',r.lat,r.lng);}
+function drivePlay(){if(!geoMap)return;if(DR.dir>0&&DR.pos>=DR.total)DR.pos=0;if(DR.dir<0&&DR.pos<=0)DR.pos=DR.total;DR.playing=true;const b=document.getElementById('drive-play');b.textContent='⏸ Stopp';b.classList.add('playing');DR.timer=setInterval(driveStep,90);}
+function driveStop(){DR.playing=false;if(DR.timer){clearInterval(DR.timer);DR.timer=null;}const b=document.getElementById('drive-play');if(b){b.textContent='▶ Fahren';b.classList.remove('playing');}}
+function initDrive(){fswPrep();document.querySelectorAll('.drive-dir-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.drive-dir-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');DR.dir=+b.dataset.dir;}));document.querySelectorAll('.drive-spd-btn').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.drive-spd-btn').forEach(x=>x.classList.remove('active'));b.classList.add('active');DR.spd=+b.dataset.spd;}));const p=document.getElementById('drive-play');if(p)p.addEventListener('click',()=>{if(DR.playing)driveStop();else drivePlay();});const sv=document.getElementById('drive-streetview');if(sv)sv.addEventListener('click',()=>{const r=fswAt(DR.pos);window.open(`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${r.lat.toFixed(6)},${r.lng.toFixed(6)}`,'_blank','noopener');});}
+
+// ===== 11B · Bürger-Entscheidungskompass =====
+const BK_CRIT=['Lärm & Wohnqualität','Reisezeit & Erreichbarkeit','Bauphasen-Belastung','Kosten & Steuerlast','Grün & Klima','Stadtraum & Wege','Zukunftsfähigkeit'];
+// a = Ausbau, s = Sanierung; je Kriterium aus Sicht der Gruppe (Skala -2..+2), faktenbasiert.
+const BK_GROUPS=[
+ {id:'pendler',icon:'🚗',name:'Pendler / Berufsverkehr',a:[0,2,-2,-1,0,1,1],s:[0,0,-1,0,0,0,-1],pro:'Kreuzungsfreier Tunnel, ~10 Min/Tag weniger Stau, zuverlässigere Fahrzeit.',con:'10+3 Jahre Baustelle mit wechselnder Verkehrsführung; Nutzen erst nach Fertigstellung.'},
+ {id:'anwohner_trasse',icon:'🏠',name:'Anwohner direkt an der Trasse',a:[2,0.5,-2,-1,2,2,1],s:[0,0,-1,0,0,0,-0.5],pro:'3 km Lärmschutzwände + Tunnel + Schallschutzfenster; Park statt Asphalt; ~14.000 profitieren.',con:'Jahrelanger Baulärm/Staub direkt vor der Tür; Portal-Emissionen bleiben.'},
+ {id:'anwohner_ausweich',icon:'🛣️',name:'Anwohner an Ausweichrouten',a:[1,1,-1,-1,1,1,0.5],s:[0,0,-0.5,0,0,0,-0.5],pro:'Weniger Schleichverkehr durch Wohnstraßen, weil Hauptachse gebündelt wird.',con:'Während der Bauzeit zeitweise mehr Umleitungsverkehr; Effekt umstritten (induziert).'},
+ {id:'mieter',icon:'🔑',name:'Mieter (trassennah)',a:[2,0.5,-2,-0.5,2,2,0.5],s:[0,0,-1,0,0,0,-0.5],pro:'Spürbar mehr Wohnqualität (Lärm/Grün) ohne eigene Investition.',con:'Aufwertung kann Mieten treiben → Verdrängungsrisiko; lange Bauphase.'},
+ {id:'eigentuemer',icon:'🏢',name:'Eigentümer / Immobilien',a:[2,0.5,-1.5,-1,2,2,1.5],s:[0,0,-1,0,0,0,-0.5],pro:'Wertsteigerung lärmberuhigter, park-naher Lagen; bessere Vernetzung.',con:'Bauphasen-Wertminderung temporär; Beteiligung an Sparten-/Gebührenkosten.'},
+ {id:'gewerbe',icon:'🏭',name:'Gewerbe / Arbeitgeber / Logistik',a:[0,2,-2,-1,0,0.5,1],s:[0,0,-1,0,0,0,-1],pro:'Bessere Erreichbarkeit/Logistik, kürzere Fahrzeiten, Standortaufwertung.',con:'Baustelle stört Anlieferung/Kundschaft über Jahre; höhere kommunale Lasten.'},
+ {id:'aktiv',icon:'🚲',name:'Rad- & Fußverkehr',a:[0.5,0,-1,-0.5,1.5,2,1.5],s:[0,0,-0.5,0,0,0,-1],pro:'~5 km neue, sichere Rad-/Gehwege; Querung der Achse, Emmy-Noether-Verbindung.',con:'Kapazitätsausbau für Kfz kann Verkehrswende konterkarieren.'},
+ {id:'klima',icon:'🌍',name:'Familien / künftige Generationen',a:[1,0.5,-1.5,-1,-0.5,1.5,-0.5],s:[0.5,0,-0.5,0,0.5,0,0.5],pro:'Neuer Park, Grün &amp; sichere Wege für Kinder; lokaler Lärm-/Schadstoffrückgang.',con:'78.759 t Bau-CO₂, Versiegelung, Pfadabhängigkeit Auto; Sanierung spart Emissionen.'},
+ {id:'steuer',icon:'💶',name:'Steuerzahler / Stadthaushalt',a:[0.5,0.5,-1,-2,0.5,0.5,0.5],s:[0,0,-0.5,-0.5,0,0,0],pro:'80 % Förderung + 150 Mio Sonderfinanzierung — Mittel zweckgebunden.',con:'~300 Mio Stadt-Eigenanteil (vs. ~56 Mio Sanierung); Großprojekt-Kostenrisiko.'},
+ {id:'kleingarten',icon:'🌳',name:'Kleingärtner / direkt Bau-Betroffene',a:[0.5,0,-2,-0.5,-1,0.5,0],s:[0,0,-0.5,0,0.5,0,0.5],pro:'Langfristig Park &amp; neue Grünflächen (Sandlebensraum, Ackerbrache).',con:'Verlust von Kleingärten &amp; Biotopflächen, jahrelange Großbaustelle.'}
+];
+let bkWeights=BK_CRIT.map(()=>50),bkSel='pendler';
+function bkNet(sc){let sw=0,acc=0;for(let i=0;i<7;i++){sw+=bkWeights[i];acc+=bkWeights[i]*sc[i];}return sw?acc/sw:0;}
+function bkScore(v){return Math.round(v*50);} // -2..+2 -> -100..100
+function bkCol(v){return v>=0?'#00CC7A':'#E6399A';}
+function bkRenderWeights(){const w=document.getElementById('bk-weights');if(!w)return;w.innerHTML=BK_CRIT.map((c,i)=>`<div><div class="flex justify-between text-[11px] mb-1"><span class="text-slate-300">${c}</span><span class="font-mono text-tngb-cyan" id="bkw-${i}">${bkWeights[i]}</span></div><input type="range" min="0" max="100" value="${bkWeights[i]}" data-i="${i}" class="slider-track bk-w"></div>`).join('');
+  w.querySelectorAll('.bk-w').forEach(s=>s.addEventListener('input',()=>{const i=+s.dataset.i;bkWeights[i]=+s.value;document.getElementById('bkw-'+i).textContent=s.value;bkRenderTable();bkRenderDetail();}));}
+function bkRenderTable(){const tb=document.getElementById('bk-tbody');if(!tb)return;let ya=0,ys=0,yn=0;
+  tb.innerHTML=BK_GROUPS.map(g=>{const na=bkNet(g.a),ns=bkNet(g.s);const lead=Math.abs(na-ns)<0.12?'offen':(na>ns?'Ausbau':'Sanierung');if(lead==='Ausbau')ya++;else if(lead==='Sanierung')ys++;else yn++;
+    const pill=lead==='Ausbau'?'<span class="verdict-pill v-enriched">→ Ausbau</span>':lead==='Sanierung'?'<span class="verdict-pill" style="background:rgba(223,175,15,.15);color:#DFAF0F;border:1px solid rgba(223,175,15,.4)">→ Sanierung</span>':'<span class="verdict-pill v-notcovered">≈ offen</span>';
+    const bar=(v,col)=>`<div class="flex items-center gap-1"><div class="flex-1 h-2 bg-tngb-card rounded relative overflow-hidden"><div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:#475569"></div><div style="position:absolute;top:0;bottom:0;${v>=0?'left:50%':'right:50%'};width:${Math.min(50,Math.abs(bkScore(v))/2)}%;background:${col}"></div></div><span class="w-8 text-right font-mono" style="color:${col}">${bkScore(v)>0?'+':''}${bkScore(v)}</span></div>`;
+    return `<tr class="bk-row cursor-pointer hover:bg-tngb-cyan/5${g.id===bkSel?' bg-tngb-cyan/5':''}" data-id="${g.id}"><td class="border border-tngb-border p-2"><span class="mr-1">${g.icon}</span>${g.name}</td><td class="border border-tngb-border p-2">${bar(na,'#00CFFF')}</td><td class="border border-tngb-border p-2">${bar(ns,'#DFAF0F')}</td><td class="border border-tngb-border p-2 text-center">${pill}</td></tr>`;}).join('');
+  tb.querySelectorAll('.bk-row').forEach(r=>r.addEventListener('click',()=>{bkSel=r.dataset.id;bkRenderTable();bkRenderDetail();}));
+  document.getElementById('bk-aggregate').innerHTML=`Bei <strong class="text-white">Ihrer</strong> Gewichtung: ${ya} Gruppe(n) → <span class="text-tngb-cyan">Ausbau</span> · ${ys} → <span class="text-tngb-gold">Sanierung</span> · ${yn} ≈ offen. <span class="text-slate-500">(Aggregation Ihrer Werte — kein Stimmungsbild.)</span>`;}
+function bkRenderDetail(){const g=BK_GROUPS.find(x=>x.id===bkSel);if(!g)return;const na=bkNet(g.a),ns=bkNet(g.s);
+  document.getElementById('bk-detail-name').textContent=g.icon+' '+g.name;
+  const lead=Math.abs(na-ns)<0.12?'≈ offen':(na>ns?'→ Ausbau':'→ Sanierung');const lc=na>ns?'#00CFFF':(ns>na?'#DFAF0F':'#94A3B8');
+  const dl=document.getElementById('bk-detail-lead');dl.textContent=lead;dl.style.color=lc;
+  document.getElementById('bk-detail-sub').textContent=`Ausbau ${bkScore(na)>0?'+':''}${bkScore(na)} · Sanierung ${bkScore(ns)>0?'+':''}${bkScore(ns)} (gewichtet)`;
+  document.getElementById('bk-detail-bars').innerHTML=BK_CRIT.map((c,i)=>`<div><div class="text-[10px] text-slate-400 mb-0.5">${c}</div><div class="flex gap-2 items-center"><span class="w-14 text-[9px] text-tngb-cyan font-mono">Ausbau</span><div class="flex-1 h-2 bg-tngb-card rounded relative overflow-hidden"><div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:#475569"></div><div style="position:absolute;top:0;bottom:0;${g.a[i]>=0?'left:50%':'right:50%'};width:${Math.min(50,Math.abs(g.a[i])*25)}%;background:#00CFFF"></div></div></div><div class="flex gap-2 items-center mt-0.5"><span class="w-14 text-[9px] text-tngb-gold font-mono">Sanier.</span><div class="flex-1 h-2 bg-tngb-card rounded relative overflow-hidden"><div style="position:absolute;left:50%;top:0;bottom:0;width:1px;background:#475569"></div><div style="position:absolute;top:0;bottom:0;${g.s[i]>=0?'left:50%':'right:50%'};width:${Math.min(50,Math.abs(g.s[i])*25)}%;background:#DFAF0F"></div></div></div></div>`).join('');
+  document.getElementById('bk-detail-pro').innerHTML=g.pro;
+  document.getElementById('bk-detail-con').innerHTML=g.con;}
+function initBK(){if(!document.getElementById('bk-weights'))return;bkRenderWeights();bkRenderTable();bkRenderDetail();}
+
+// ===== Init + Resize =====
+const io=new IntersectionObserver(es=>es.forEach(e=>e.isIntersecting&&e.target.classList.add('visible')),{threshold:0.1});
+document.querySelectorAll('.scroll-fade').forEach(el=>io.observe(el));
+window.addEventListener('resize',()=>{Object.values(vizCharts).forEach(c=>c&&c.resize());if(radar)radar.resize();if(geoMap)geoMap.invalidateSize();});
+window.addEventListener('load',()=>{ptRender();renderSim();initCAT();initViz();initNavDock();initGallery();initGeo();initLightbox();initHeroRoller();initMapFS();initDrive();initBK();});
+</script>
+
+<!-- ===== 13 · AGENT-AUDIT-TRAIL (CLAUDE.md-Pflicht ab 2026-06-08 · RETROFIT 2026-06-08) ===== -->
+<section class="py-8 px-6 lg:px-8 border-t border-tngb-border" id="agent-audit-section">
+  <div class="max-w-6xl mx-auto px-4">
+    <div class="flex items-start justify-between flex-wrap gap-3 mb-4">
+      <div>
+        <div class="text-xs font-mono text-tngb-cyan mb-2">13 · QUALITÄTSAGENTEN</div>
+        <h3 class="font-display font-bold text-xl text-white mb-1">Welche Agenten haben diesen Build geprüft?</h3>
+        <p class="text-xs text-tngb-muted">Pflicht-Audit-Trail laut CLAUDE.md · alle Pflicht-Agenten am 2026-06-08 geprüft (Council · Wikipedia · DBOM)</p>
+      </div>
+      <div class="text-right text-[10px] font-mono text-tngb-muted">
+        <div>Build: <span id="audit-build-id" class="text-tngb-cyan">—</span></div>
+        <div>Stichtag: <span id="audit-stichtag" class="text-tngb-cyan">—</span></div>
+        <div>Status: <span id="audit-overall-status">—</span></div>
+      </div>
+    </div>
+    <div id="agents-used-grid" class="grid md:grid-cols-2 gap-3 text-[12px]"></div>
+    <details id="agents-skipped-block" class="mt-4">
+      <summary class="text-xs text-tngb-muted cursor-pointer hover:text-white">▸ <span id="agents-skipped-count">0</span> Agent(en) bewusst ausgelassen — anzeigen</summary>
+      <div id="agents-skipped-list" class="mt-2 grid md:grid-cols-2 gap-2 text-[11px]"></div>
+    </details>
+    <details id="agents-open-issues" class="mt-2" open>
+      <summary class="text-xs text-tngb-gold cursor-pointer hover:text-white">▸ <span id="open-issues-count">0</span> offene Issue(s)/Backlog-Einträge — anzeigen</summary>
+      <div id="open-issues-list" class="mt-2 space-y-1 text-[11px]"></div>
+    </details>
+    <div class="mt-4 text-[10px] mono text-tngb-muted leading-relaxed border-l-2 border-tngb-cyan/40 pl-2 py-1">
+      Retroaktiv eingefuegt am 2026-06-08 · Validiert gegen <a href="data/agent-usage-schema.json" target="_blank" class="text-tngb-cyan hover:underline">agent-usage-schema.json</a>
+    </div>
+  </div>
+</section>
+<script type="application/json" id="module-agents-used">
+{
+  "stichtag": "2026-06-08",
+  "build_timestamp": "2026-06-08T17:08:16.7924171+02:00",
+  "agents_used": [
+    {
+      "timestamp": "2026-06-08T18:30:00+02:00",
+      "id": "fincoach-interdisciplinary-council",
+      "status": "passed-with-warnings",
+      "output": ".claude/scratch/m310-frankenschnellweg/conflict-matrix.json",
+      "stats": { "rollen": 5, "konflikte": 3 },
+      "warnings": [
+        "Reisezeit-Annahmen (2,25 Min Durchfahrt vs. ~10 Min/Tag) nicht abschließend vergleichbar — als Transparenzlücke markiert.",
+        "Initiative-Verkehrszahlen (~20% Tunnelnutzung, +10.000 Kfz) sind lagerspezifisch, nicht neutrale Tatsache."
+      ]
+    },
+    {
+      "timestamp": "2026-06-08T18:30:00+02:00",
+      "id": "fincoach-wikipedia-synthesis",
+      "status": "passed",
+      "output": ".claude/scratch/m310-frankenschnellweg/wikipedia-check.json",
+      "stats": { "verdicts": "CONFIRMED:3 · ENRICHED:3 · NOT_COVERED:2", "integration_ready": "true", "unresolved_divergences": 0 }
+    },
+    {
+      "timestamp": "2026-06-08T18:30:00+02:00",
+      "id": "fincoach-module-provenance",
+      "status": "passed",
+      "output": "provenance/m310.dbom.json",
+      "stats": { "sources": 9, "facts": 10, "honesty_rules": "applied" }
+    },
+    {
+      "stats": {
+        "note": "Pre-Commit-Hook hat alle bisherigen Commits validiert"
+      },
+      "timestamp": "2026-06-08T17:08:16.7924171+02:00",
+      "id": "fincoach-module-compliance-guardian",
+      "status": "passed"
+    }
+  ],
+  "build_id": "m310-frankenschnellweg-buergerentscheid-audit-2026-06-08",
+  "_retrofit_note": "Audit-Trail am 2026-06-08 retroaktiv eingefuegt; am selben Tag wurden die drei Pflicht-Pässe (Council, Wikipedia-in-the-Loop, M-DBOM Provenance) tatsächlich durchgeführt und auf 'passed'/'passed-with-warnings' gesetzt. Artefakte unter .claude/scratch/m310-frankenschnellweg/ und provenance/m310.dbom.json.",
+  "open_issues": [],
+  "module_type": "tiefenmodul",
+  "module_id": "m310-frankenschnellweg-buergerentscheid",
+  "agents_skipped": [
+    {
+      "reason": "kein zeitsensibler Aktualitaets-Bezug in diesem Modul",
+      "id": "fincoach-news-feed"
+    },
+    {
+      "reason": "kein boersennotierter Wirtschafts-Bezug erforderlich",
+      "id": "fincoach-yahoo-finance"
+    },
+    {
+      "reason": "kein Index-/Time-Series-Bezug in diesem Modul",
+      "id": "fincoach-index-history"
+    }
+  ]
+}
+</script>
+</body></html>

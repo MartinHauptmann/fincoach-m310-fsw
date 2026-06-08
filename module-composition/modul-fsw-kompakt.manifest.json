@@ -1,0 +1,22 @@
+{
+  "$schema": "fincoach-module-manifest/1.0",
+  "module": "m310k",
+  "title": "Frankenschnellweg — Kompaktmodul (generiert)",
+  "slug": "modul-m310k-frankenschnellweg-kompakt",
+  "dataStand": "2026-06-08",
+  "personaDefault": "buerger",
+  "blocks": [
+    { "use": "hero" },
+    { "use": "core-mechanics" },
+    { "use": "lifecycle-cost" },
+    { "use": "emissions-dossier" },
+    { "use": "swot" },
+    { "use": "wikipedia-check", "collapsed": true },
+    { "use": "sources-glossary", "collapsed": true }
+  ],
+  "personaPresets": {
+    "buerger":     { "orderFirst": ["hero", "core-mechanics", "swot"], "collapse": ["wikipedia-check"] },
+    "entscheider": { "orderFirst": ["hero", "swot", "lifecycle-cost", "emissions-dossier"], "collapse": ["wikipedia-check", "sources-glossary"] },
+    "fachperson":  { "orderFirst": ["hero", "emissions-dossier", "lifecycle-cost"], "expand": ["wikipedia-check", "sources-glossary"] }
+  }
+}

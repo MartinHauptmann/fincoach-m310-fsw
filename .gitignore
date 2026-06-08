@@ -1,0 +1,10 @@
+# Netlify CLI artifacts
+.netlify/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS artifacts
+.DS_Store
+Thumbs.db

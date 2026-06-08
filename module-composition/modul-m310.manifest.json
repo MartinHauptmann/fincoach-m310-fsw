@@ -1,0 +1,55 @@
+{
+  "$schema": "fincoach-module-manifest/1.0",
+  "module": "m310",
+  "title": "Bürgerentscheid Frankenschnellweg Nürnberg",
+  "slug": "modul-m310-frankenschnellweg-buergerentscheid",
+  "dataStand": "2026-06-04",
+  "personaDefault": "buerger",
+  "blocks": [
+    { "use": "hero" },
+    { "use": "media-gallery" },
+    { "use": "background-3level" },
+    { "use": "interdisciplinary-map", "collapsed": true },
+    { "use": "science-foundation", "collapsed": true },
+    { "use": "core-mechanics" },
+    { "use": "lifecycle-cost" },
+    { "use": "emissions-dossier" },
+    { "use": "process-timeline", "collapsed": true },
+    { "use": "impact-simulator" },
+    { "use": "visual-gallery", "collapsed": true },
+    { "use": "geo-impact-map" },
+    { "use": "wikipedia-check", "collapsed": true },
+    { "use": "decision-matrix", "collapsed": true },
+    { "use": "impact-dossier" },
+    { "use": "implementation-roadmap", "collapsed": true },
+    { "use": "swot" },
+    { "use": "stakeholder-compass" },
+    { "use": "sources-glossary" },
+
+    { "use": "metric-vs-thresholds", "enabled": false }
+  ],
+  "personaPresets": {
+    "buerger": {
+      "orderFirst": ["hero", "media-gallery", "core-mechanics", "swot", "stakeholder-compass"],
+      "collapse": ["science-foundation", "decision-matrix", "interdisciplinary-map"]
+    },
+    "entscheider": {
+      "orderFirst": ["hero", "stakeholder-compass", "swot", "lifecycle-cost", "emissions-dossier"],
+      "collapse": ["process-timeline", "media-gallery", "interdisciplinary-map", "science-foundation"]
+    },
+    "fachperson": {
+      "orderFirst": ["hero", "science-foundation", "emissions-dossier", "geo-impact-map", "decision-matrix"],
+      "expand": ["process-timeline", "visual-gallery", "wikipedia-check"]
+    },
+    "betroffener": {
+      "orderFirst": ["hero", "geo-impact-map", "emissions-dossier", "media-gallery", "stakeholder-compass"],
+      "hide": ["science-foundation", "interdisciplinary-map"],
+      "collapse": ["decision-matrix", "implementation-roadmap"]
+    },
+    "schueler": {
+      "orderFirst": ["hero", "media-gallery", "background-3level", "process-timeline"],
+      "collapse": ["lifecycle-cost", "decision-matrix", "wikipedia-check"],
+      "hide": ["science-foundation"]
+    }
+  }
+}

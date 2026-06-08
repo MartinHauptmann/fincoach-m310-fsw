@@ -1,0 +1,20 @@
+/* FinCoach Module Composition Framework · Runtime-Styles (fc-blocks) */
+.fc-block{border:1px solid #1E293B;border-radius:14px;background:#121A2E;margin-bottom:14px;overflow:hidden;transition:border-color .2s}
+.fc-block:hover{border-color:rgba(0,207,255,.3)}
+.fc-block-head{width:100%;display:flex;align-items:center;gap:12px;padding:14px 18px;background:transparent;border:none;cursor:pointer;text-align:left;color:#E2E8F0;font-family:'Space Grotesk',sans-serif}
+.fc-block-head:hover{background:rgba(0,207,255,.04)}
+.fc-block-title{font-weight:600;font-size:15px;flex:1}
+.fc-chevron{transition:transform .25s;color:#64748B;font-size:14px}
+.fc-block[data-state="collapsed"] .fc-chevron{transform:rotate(-90deg)}
+.fc-block[data-state="collapsed"] .fc-block-body{display:none}
+.fc-block-body{padding:4px 18px 18px 18px;border-top:1px solid #1E293B}
+.fc-badge{font-family:'JetBrains Mono',monospace;font-size:9px;padding:1px 6px;border-radius:9999px;white-space:nowrap}
+.b-req{background:rgba(230,57,154,.15);color:#E6399A;border:1px solid rgba(230,57,154,.4)}
+.b-lib{background:rgba(153,51,255,.13);color:#9933FF;border:1px solid rgba(153,51,255,.35)}
+.b-cat{background:rgba(0,207,255,.10);color:#00CFFF;border:1px solid rgba(0,207,255,.3)}
+.b-lazy{background:rgba(223,175,15,.13);color:#DFAF0F;border:1px solid rgba(223,175,15,.35)}
+.fc-ctl{background:#0A0F1A;border:1px solid #1E293B;color:#fff;border-radius:8px;padding:7px 10px;font-size:13px}
+.fc-btn{background:rgba(0,207,255,.10);border:1px solid rgba(0,207,255,.4);color:#00CFFF;border-radius:8px;padding:7px 12px;font-size:12px;font-family:'JetBrains Mono',monospace;cursor:pointer}
+.fc-btn:hover{background:rgba(0,207,255,.2)}
+.fc-slider{-webkit-appearance:none;width:100%;height:4px;background:#1E293B;border-radius:2px}
+.fc-slider::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;background:#00CFFF;border-radius:50%;cursor:pointer}

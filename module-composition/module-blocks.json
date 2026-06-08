@@ -1,0 +1,10 @@
+{
+  "$schema": "fincoach-module-blocks/1.0",
+  "updated": "2026-06-08",
+  "catalog": "module-composition/blocks-catalog.json",
+  "note": "Registry der MCF-Module (Manifest-basiert). Der Guardian prueft je Eintrag, ob alle required-Bloecke vorhanden sind.",
+  "modules": [
+    { "module": "m310",  "manifest": "module-composition/modul-m310.manifest.json",  "html": "modul-m310-frankenschnellweg-buergerentscheid.html", "mode": "monolith-mapped" },
+    { "module": "m310k", "manifest": "module-composition/modul-fsw-kompakt.manifest.json", "html": "module-composition/out/modul-m310k-frankenschnellweg-kompakt.composed.html", "mode": "generated" }
+  ]
+}

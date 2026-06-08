@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<!--
+  FinCoach Module Builder · erzeugt modul-mXXX.manifest.json per Klick.
+  Liest blocks-catalog.json, erlaubt Auswahl/Reihenfolge/Default-Zustand/Persona-Presets,
+  zeigt Live-Manifest und exportiert/importiert JSON. Teil des Module Composition Framework (MCF).
+-->
+<html lang="de" class="dark">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FinCoach Module Builder · MCF</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','system-ui','sans-serif'],display:['Space Grotesk','sans-serif'],mono:['JetBrains Mono','monospace']},colors:{tngb:{bg:'#0A0F1A',card:'#121A2E',cyan:'#00CFFF',emerald:'#00CC7A',magenta:'#E6399A',orange:'#FF6B00',lavender:'#9933FF',gold:'#DFAF0F',indigo:'#4472C4',coral:'#E040A0',muted:'#64748B',border:'#1E293B'}}}}};</script>
+<style>
+body{background:#0A0F1A;color:#E2E8F0;font-family:'Inter',sans-serif}
+.glass-nav{background:rgba(10,15,26,.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,207,255,.15)}
+.ctl{background:#0A0F1A;border:1px solid #1E293B;color:#fff;border-radius:8px;padding:6px 9px;font-size:13px}
+.btn{background:rgba(0,207,255,.10);border:1px solid rgba(0,207,255,.4);color:#00CFFF;border-radius:8px;padding:7px 12px;font-size:12px;font-family:'JetBrains Mono',monospace;cursor:pointer}
+.btn:hover{background:rgba(0,207,255,.2)}
+.btn-go{background:rgba(0,204,122,.12);border-color:rgba(0,204,122,.45);color:#00CC7A}
+.btn-go:hover{background:rgba(0,204,122,.22)}
+.row{display:flex;align-items:center;gap:10px;padding:8px 10px;border:1px solid #1E293B;border-radius:10px;background:#121A2E;margin-bottom:6px}
+.row.off{opacity:.45}
+.fc-badge{font-family:'JetBrains Mono',monospace;font-size:9px;padding:1px 6px;border-radius:9999px;white-space:nowrap}
+.b-req{background:rgba(230,57,154,.15);color:#E6399A;border:1px solid rgba(230,57,154,.4)}
+.b-lib{background:rgba(153,51,255,.13);color:#9933FF;border:1px solid rgba(153,51,255,.35)}
+.b-cat{background:rgba(0,207,255,.10);color:#00CFFF;border:1px solid rgba(0,207,255,.3)}
+.ord{background:#0A0F1A;border:1px solid #1E293B;color:#94A3B8;border-radius:6px;width:26px;height:24px;cursor:pointer;font-size:12px}
+.ord:hover{color:#00CFFF;border-color:#00CFFF}
+pre{background:#0A0F1A;border:1px solid #1E293B;border-radius:10px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#9bd;overflow:auto;max-height:70vh}
+input[type=text]{background:#0A0F1A;border:1px solid #1E293B;color:#fff;border-radius:8px;padding:6px 9px;font-size:13px}
+textarea{background:#0A0F1A;border:1px solid #1E293B;color:#9bd;border-radius:8px;padding:9px;font-family:'JetBrains Mono',monospace;font-size:11px;width:100%}
+</style>
+</head>
+<body>
+<nav class="glass-nav fixed top-0 left-0 right-0 z-50"><div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<svg viewBox="0 0 100 100" class="w-8 h-8"><path d="M 6,95 L 6,53 A 8,8 0 0 1 22,53 L 22,95 Z" fill="#E6399A" fill-opacity=".25" stroke="#E6399A" stroke-width="2"/><path d="M 26,95 L 26,35 A 8,8 0 0 1 42,35 L 42,95 Z" fill="#00CFFF" fill-opacity=".25" stroke="#00CFFF" stroke-width="2"/><path d="M 46,95 L 46,21 A 8,8 0 0 1 62,21 L 62,95 Z" fill="#00CC7A" fill-opacity=".25" stroke="#00CC7A" stroke-width="2"/><path d="M 66,95 L 66,10 A 8,8 0 0 1 82,10 L 82,95 Z" fill="#FF6B00" fill-opacity=".25" stroke="#FF6B00" stroke-width="2"/></svg>
+<div><div class="font-display font-bold text-white leading-tight">FinCoach Module Builder</div><div class="text-[10px] text-tngb-cyan font-mono">Module Composition Framework</div></div>
+</div>
+<a href="fc-module-composition-demo.html" class="text-slate-300 hover:text-tngb-cyan text-sm">Demo-Renderer →</a>
+</div></nav>
+
+<section class="pt-28 pb-6 px-6"><div class="max-w-7xl mx-auto">
+<h1 class="font-display font-black text-3xl text-white mb-1">Modul per Klick zusammenstellen</h1>
+<p class="text-slate-400 text-sm mb-5">Blöcke an-/abwählen, Reihenfolge und Default-Zustand setzen, Persona-Presets pflegen → <strong class="text-white">Manifest exportieren</strong>. Pflichtblöcke sind fix.</p>
+<div class="grid md:grid-cols-3 lg:grid-cols-5 gap-3 mb-4 bg-tngb-card border border-tngb-border rounded-xl p-4">
+<div><label class="block text-[10px] font-mono text-slate-500 uppercase mb-1">Modul-Nr</label><input id="m-module" type="text" value="m999" class="w-full"></div>
+<div class="lg:col-span-2"><label class="block text-[10px] font-mono text-slate-500 uppercase mb-1">Titel</label><input id="m-title" type="text" value="Neues FinCoach-Modul" class="w-full"></div>
+<div><label class="block text-[10px] font-mono text-slate-500 uppercase mb-1">Datenstand</label><input id="m-stand" type="text" value="2026-06-05" class="w-full"></div>
+<div><label class="block text-[10px] font-mono text-slate-500 uppercase mb-1">Persona-Default</label><select id="m-persona" class="ctl w-full"></select></div>
+</div>
+</div></section>
+
+<main class="max-w-7xl mx-auto px-6 pb-20 grid lg:grid-cols-2 gap-6">
+<div>
+<div class="flex items-center justify-between mb-2">
+<h2 class="font-display font-bold text-white">Blöcke</h2>
+<div class="flex gap-2"><button id="b-all" class="btn">Alle an</button><button id="b-none" class="btn">Nur Pflicht</button></div>
+</div>
+<div id="rows"></div>
+<div class="mt-4">
+<label class="block text-[10px] font-mono text-slate-500 uppercase mb-1">Persona-Presets (JSON, optional)</label>
+<textarea id="m-presets" rows="8">{}</textarea>
+<p class="text-[10px] text-slate-500 mt-1">Schlüssel = Persona; Werte: <span class="font-mono">orderFirst</span>, <span class="font-mono">collapse</span>, <span class="font-mono">expand</span>, <span class="font-mono">hide</span> (Arrays von Block-IDs).</p>
+</div>
+</div>
+<div>
+<div class="flex items-center justify-between mb-2">
+<h2 class="font-display font-bold text-white">Manifest-Vorschau</h2>
+<div class="flex gap-2">
+<button id="b-import" class="btn">↑ Import</button>
+<button id="b-copy" class="btn">⧉ Kopieren</button>
+<button id="b-export" class="btn btn-go">↓ Export .json</button>
+</div>
+</div>
+<div id="warn" class="text-[11px] text-tngb-magenta font-mono mb-2"></div>
+<pre id="preview"></pre>
+<input id="file-import" type="file" accept="application/json" class="hidden">
+</div>
+</main>
+
+<script>
+let CATALOG,catById={},order=[],state={};
+async function loadJSON(p){const r=await fetch(p);return r.json();}
+function slugify(t){return (t||'').toLowerCase().replace(/[äàá]/g,'a').replace(/ö/g,'o').replace(/ü/g,'u').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');}
+
+function renderRows(){
+  const root=document.getElementById('rows');root.innerHTML='';
+  order.forEach((id,idx)=>{
+    const b=catById[id];if(!b)return;const st=state[id];
+    const row=document.createElement('div');row.className='row'+(st.include?'':' off');
+    const libs=(b.libs||[]).map(l=>`<span class="fc-badge b-lib">${l}</span>`).join(' ');
+    row.innerHTML=`
+      <div class="flex flex-col gap-0.5"><button class="ord" data-up="${idx}">▲</button><button class="ord" data-down="${idx}">▼</button></div>
+      <input type="checkbox" data-inc="${id}" ${st.include?'checked':''} ${b.required?'disabled':''} class="w-4 h-4 accent-tngb-cyan">
+      <div class="flex-1 min-w-0">
+        <div class="text-sm text-white truncate">${b.title}</div>
+        <div class="flex gap-1 mt-0.5 flex-wrap"><span class="fc-badge b-cat">${b.category}</span>${b.required?'<span class="fc-badge b-req">Pflicht</span>':''}${libs}<span class="text-[9px] text-slate-600 font-mono">${id}</span></div>
+      </div>
+      <select data-state="${id}" class="ctl" ${st.include?'':'disabled'}>
+        <option value="default"${st.state==='default'?' selected':''}>Standard</option>
+        <option value="expanded"${st.state==='expanded'?' selected':''}>aufgeklappt</option>
+        <option value="collapsed"${st.state==='collapsed'?' selected':''}>eingeklappt</option>
+      </select>`;
+    root.appendChild(row);
+  });
+  root.querySelectorAll('[data-inc]').forEach(c=>c.addEventListener('change',e=>{state[e.target.dataset.inc].include=e.target.checked;renderRows();update();}));
+  root.querySelectorAll('[data-state]').forEach(s=>s.addEventListener('change',e=>{state[e.target.dataset.state].state=e.target.value;update();}));
+  root.querySelectorAll('[data-up]').forEach(btn=>btn.addEventListener('click',()=>{const i=+btn.dataset.up;if(i>0){[order[i-1],order[i]]=[order[i],order[i-1]];renderRows();update();}}));
+  root.querySelectorAll('[data-down]').forEach(btn=>btn.addEventListener('click',()=>{const i=+btn.dataset.down;if(i<order.length-1){[order[i+1],order[i]]=[order[i],order[i+1]];renderRows();update();}}));
+}
+
+function buildManifest(){
+  const blocks=order.filter(id=>state[id].include).map(id=>{const o={use:id};const s=state[id].state;if(s==='expanded')o.collapsed=false;else if(s==='collapsed')o.collapsed=true;return o;});
+  let presets={};let warn='';
+  try{presets=JSON.parse(document.getElementById('m-presets').value||'{}');}catch(e){warn='Persona-Presets: ungültiges JSON — wird beim Export auf {} gesetzt.';presets={};}
+  document.getElementById('warn').textContent=warn;
+  const title=document.getElementById('m-title').value;
+  return {
+    "$schema":"fincoach-module-manifest/1.0",
+    module:document.getElementById('m-module').value,
+    title,
+    slug:'modul-'+document.getElementById('m-module').value+'-'+slugify(title),
+    dataStand:document.getElementById('m-stand').value,
+    personaDefault:document.getElementById('m-persona').value,
+    blocks,
+    personaPresets:presets
+  };
+}
+function update(){document.getElementById('preview').textContent=JSON.stringify(buildManifest(),null,2);}
+
+(async function(){
+  CATALOG=await loadJSON('blocks-catalog.json');
+  CATALOG.blocks.forEach(b=>catById[b.id]=b);
+  order=CATALOG.blocks.map(b=>b.id);
+  CATALOG.blocks.forEach(b=>state[b.id]={include:!!b.required||b.defaultState!=='hidden',state:'default'});
+  const sp=document.getElementById('m-persona');(CATALOG.personas||['buerger']).forEach(p=>{const o=document.createElement('option');o.value=p;o.textContent=p;sp.appendChild(o);});
+  document.getElementById('m-presets').value=JSON.stringify(Object.fromEntries((CATALOG.personas||[]).map(p=>[p,{orderFirst:[],collapse:[]}])),null,2);
+  ['m-module','m-title','m-stand','m-persona','m-presets'].forEach(id=>document.getElementById(id).addEventListener('input',update));
+  document.getElementById('b-all').addEventListener('click',()=>{Object.keys(state).forEach(k=>state[k].include=true);renderRows();update();});
+  document.getElementById('b-none').addEventListener('click',()=>{Object.keys(state).forEach(k=>state[k].include=!!catById[k].required);renderRows();update();});
+  document.getElementById('b-copy').addEventListener('click',()=>{navigator.clipboard.writeText(document.getElementById('preview').textContent);});
+  document.getElementById('b-export').addEventListener('click',()=>{const m=buildManifest();const blob=new Blob([JSON.stringify(m,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='modul-'+m.module+'.manifest.json';a.click();URL.revokeObjectURL(a.href);});
+  document.getElementById('b-import').addEventListener('click',()=>document.getElementById('file-import').click());
+  document.getElementById('file-import').addEventListener('change',e=>{const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const m=JSON.parse(rd.result);document.getElementById('m-module').value=m.module||'';document.getElementById('m-title').value=m.title||'';document.getElementById('m-stand').value=m.dataStand||'';if(m.personaDefault)document.getElementById('m-persona').value=m.personaDefault;document.getElementById('m-presets').value=JSON.stringify(m.personaPresets||{},null,2);const used=(m.blocks||[]).map(x=>x.use);Object.keys(state).forEach(k=>state[k].include=!!catById[k].required);used.forEach((id,i)=>{if(state[id]){state[id].include=true;const blk=m.blocks[i];state[id].state=blk.collapsed===true?'collapsed':(blk.collapsed===false?'expanded':'default');}});order=used.filter(id=>catById[id]).concat(order.filter(id=>!used.includes(id)));renderRows();update();}catch(err){alert('Import fehlgeschlagen: '+err.message);}};rd.readAsText(f);});
+  renderRows();update();
+})();
+</script>
+</body></html>
