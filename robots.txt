@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://fincoach-m310-fsw.netlify.app/sitemap.xml
+Sitemap: https://nuernberg-frankenschnellweg.netlify.app/sitemap.xml

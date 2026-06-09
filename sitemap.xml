@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Domain vor Go-Live in den <loc>-Einträgen auf echte Domain anpassen. -->
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://fincoach-m310-fsw.netlify.app/</loc><lastmod>2026-06-08</lastmod><priority>1.0</priority></url>
-  <url><loc>https://fincoach-m310-fsw.netlify.app/modul.html</loc><lastmod>2026-06-08</lastmod><priority>0.9</priority></url>
-  <url><loc>https://fincoach-m310-fsw.netlify.app/impressum.html</loc><lastmod>2026-06-08</lastmod><priority>0.3</priority></url>
-  <url><loc>https://fincoach-m310-fsw.netlify.app/datenschutz.html</loc><lastmod>2026-06-08</lastmod><priority>0.3</priority></url>
+  <url><loc>https://nuernberg-frankenschnellweg.netlify.app/</loc><lastmod>2026-06-08</lastmod><priority>1.0</priority></url>
+  <url><loc>https://nuernberg-frankenschnellweg.netlify.app/modul.html</loc><lastmod>2026-06-08</lastmod><priority>0.9</priority></url>
+  <url><loc>https://nuernberg-frankenschnellweg.netlify.app/impressum.html</loc><lastmod>2026-06-08</lastmod><priority>0.3</priority></url>
+  <url><loc>https://nuernberg-frankenschnellweg.netlify.app/datenschutz.html</loc><lastmod>2026-06-08</lastmod><priority>0.3</priority></url>
 </urlset>
