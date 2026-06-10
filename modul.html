@@ -7,6 +7,12 @@
 -->
 <html lang="de" class="dark">
 <head>
+<script>/* R-RENDER-01: Fade nur bei JS; Inhalt nie dauerhaft unsichtbar */
+document.documentElement.classList.add('js');
+document.addEventListener('DOMContentLoaded',function(){
+  var els=document.querySelectorAll('.scroll-fade');
+  setTimeout(function(){els.forEach(function(el){el.classList.add('visible');});},1800);
+});</script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>M310 · Bürgerentscheid Frankenschnellweg Nürnberg · FinCoach AI</title>
 <meta name="description" content="Tiefenmodul zum Nürnberger Bürgerentscheid am 28.06.2026 über den kreuzungsfreien Ausbau des Frankenschnellwegs: Kosten ~1,1 Mrd. €, Tunnel, Förderung, Klima, Direktdemokratie – ausgewogen mit Pro- und Contra-Position.">
@@ -27,7 +33,7 @@
 <style>
 body{background:#0A0F1A;color:#E2E8F0;font-family:'Inter',sans-serif}
 .glass-nav{background:rgba(10,15,26,0.85);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,207,255,0.15)}
-.scroll-fade{opacity:0;transform:translateY(20px);transition:all .6s}.scroll-fade.visible{opacity:1;transform:translateY(0)}
+html.js .scroll-fade{opacity:0;transform:translateY(20px);transition:all .6s}html.js .scroll-fade.visible{opacity:1;transform:translateY(0)}
 .hero-gradient{background:radial-gradient(circle at 30% 20%,rgba(0,207,255,.18),transparent 50%),radial-gradient(circle at 70% 80%,rgba(230,57,154,.10),transparent 50%)}
 .slider-track{-webkit-appearance:none;width:100%;height:4px;background:#1E293B;border-radius:2px;outline:none}
 .slider-track::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;background:#00CFFF;border-radius:50%;cursor:pointer;box-shadow:0 0 12px rgba(0,207,255,.5)}
